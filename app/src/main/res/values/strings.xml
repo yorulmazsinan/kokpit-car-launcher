@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Kokpit</string>
+    <string name="back">Back</string>
+    <string name="start_failed">This screen can\'t be opened on this device</string>
+
+    <string name="system_tools_title">System Tools</string>
+    <string name="shortcut_screen_lock">Change or Remove Screen Lock</string>
+    <string name="shortcut_all_settings">All Android Settings</string>
+    <string name="shortcut_wifi">Wi-Fi</string>
+    <string name="shortcut_bluetooth">Bluetooth</string>
+    <string name="shortcut_apps">Apps</string>
+    <string name="shortcut_default_apps">Default Apps</string>
+    <string name="shortcut_developer">Developer Options</string>
+    <string name="shortcut_date">Date and Time</string>
+    <string name="shortcut_language">Language</string>
+    <string name="shortcut_vendor_home">Return to Stock Home Screen</string>
+    <string name="activity_explorer_title">Activity Explorer</string>
+    <string name="activity_explorer_empty">This package has no screens that can be opened.</string>
+    <string name="diagnostics_title">Diagnostics</string>
 </resources>

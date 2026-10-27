@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Kokpit</string>
+    <string name="back">Geri</string>
+    <string name="start_failed">Bu ekran bu cihazda açılamıyor</string>
+
+    <string name="system_tools_title">Sistem Araçları</string>
+    <string name="shortcut_screen_lock">Ekran Kilidini Değiştir veya Kaldır</string>
+    <string name="shortcut_all_settings">Tüm Android Ayarları</string>
+    <string name="shortcut_wifi">Wi-Fi</string>
+    <string name="shortcut_bluetooth">Bluetooth</string>
+    <string name="shortcut_apps">Uygulamalar</string>
+    <string name="shortcut_default_apps">Varsayılan Uygulamalar</string>
+    <string name="shortcut_developer">Geliştirici Seçenekleri</string>
+    <string name="shortcut_date">Tarih ve Saat</string>
+    <string name="shortcut_language">Dil</string>
+    <string name="shortcut_vendor_home">Üretici Ana Ekranına Dön</string>
+    <string name="activity_explorer_title">Etkinlik Gezgini</string>
+    <string name="activity_explorer_empty">Bu pakette açılabilen ekran yok.</string>
+    <string name="diagnostics_title">Teşhis</string>
 </resources>
