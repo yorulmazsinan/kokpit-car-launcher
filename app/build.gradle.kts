@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -16,8 +18,25 @@ android {
         versionName = "0.1.0"
     }
 
+    val keystoreFile = listOf(
+        rootProject.file("keystore.properties"),
+        File(System.getProperty("user.home"), ".config/kokpit/keystore.properties"),
+    ).firstOrNull { it.exists() }
+    signingConfigs {
+        if (keystoreFile != null) {
+            create("release") {
+                val props = Properties().apply { keystoreFile.inputStream().use(::load) }
+                storeFile = File(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -55,6 +74,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.profileinstaller)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 
