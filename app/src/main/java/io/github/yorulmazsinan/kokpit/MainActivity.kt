@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
+import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
 import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
 import io.github.yorulmazsinan.kokpit.system.SystemToolsScreen
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
@@ -47,6 +48,6 @@ private fun KokpitNavHost() {
         composable(Routes.PACKAGE_ACTIVITIES) { entry ->
             PackageActivitiesScreen(entry.arguments?.getString("pkg").orEmpty(), onBack = { nav.popBackStack() })
         }
-        composable(Routes.DIAGNOSTICS) { }
+        composable(Routes.DIAGNOSTICS) { DiagnosticsScreen(onBack = { nav.popBackStack() }) }
     }
 }

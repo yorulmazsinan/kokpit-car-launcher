@@ -18,4 +18,9 @@
     <string name="activity_explorer_title">Etkinlik Gezgini</string>
     <string name="activity_explorer_empty">Bu pakette açılabilen ekran yok.</string>
     <string name="diagnostics_title">Teşhis</string>
+    <string name="diagnostics_copy">Kopyala</string>
+    <string name="diagnostics_save">Dosyaya Kaydet</string>
+    <string name="diagnostics_copied">Panoya kopyalandı</string>
+    <string name="diagnostics_saved">Kaydedildi</string>
+    <string name="diagnostics_save_failed">Dosya kaydedilemedi</string>
 </resources>

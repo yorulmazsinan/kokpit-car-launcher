@@ -18,4 +18,9 @@
     <string name="activity_explorer_title">Activity Explorer</string>
     <string name="activity_explorer_empty">This package has no screens that can be opened.</string>
     <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_copy">Copy</string>
+    <string name="diagnostics_save">Save to File</string>
+    <string name="diagnostics_copied">Copied to clipboard</string>
+    <string name="diagnostics_saved">Saved</string>
+    <string name="diagnostics_save_failed">Couldn\'t save the file</string>
 </resources>
