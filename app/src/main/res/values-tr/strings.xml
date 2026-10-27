@@ -23,4 +23,12 @@
     <string name="diagnostics_copied">Panoya kopyalandı</string>
     <string name="diagnostics_saved">Kaydedildi</string>
     <string name="diagnostics_save_failed">Dosya kaydedilemedi</string>
+    <string name="compass_n">K</string>
+    <string name="compass_ne">KD</string>
+    <string name="compass_e">D</string>
+    <string name="compass_se">GD</string>
+    <string name="compass_s">G</string>
+    <string name="compass_sw">GB</string>
+    <string name="compass_w">B</string>
+    <string name="compass_nw">KB</string>
 </resources>
