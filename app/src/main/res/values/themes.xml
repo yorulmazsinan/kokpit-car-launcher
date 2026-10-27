@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Kokpit" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/kokpit_background</item>
+        <item name="android:statusBarColor">@color/kokpit_background</item>
+        <item name="android:navigationBarColor">@color/kokpit_background</item>
+    </style>
+    <color name="kokpit_background">#111110</color>
+</resources>
