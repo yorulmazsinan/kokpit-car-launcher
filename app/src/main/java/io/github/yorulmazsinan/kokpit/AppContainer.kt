@@ -12,18 +12,21 @@ import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.media.NowPlayingRepository
+import io.github.yorulmazsinan.kokpit.settings.KeystoreSecretBox
+import io.github.yorulmazsinan.kokpit.settings.SettingsRepository
 import io.github.yorulmazsinan.kokpit.weather.OpenMeteoClient
 import io.github.yorulmazsinan.kokpit.weather.WeatherRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
 private val Context.weatherStore by preferencesDataStore("weather")
 private val Context.dockStore by preferencesDataStore("dock")
+private val Context.settingsStore by preferencesDataStore("settings")
 
 /** Hand-wired holder for the app's long-lived repositories. */
 class AppContainer(context: Context) {
@@ -38,7 +41,8 @@ class AppContainer(context: Context) {
     val nowPlaying = NowPlayingRepository(appContext)
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
-    val themeMode: Flow<ThemeMode> = flowOf(ThemeMode.DARK)
+    val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)
+    val themeMode: Flow<ThemeMode> = settings.settings.map { it.themeMode }
 
     fun start() {
         drive.start()

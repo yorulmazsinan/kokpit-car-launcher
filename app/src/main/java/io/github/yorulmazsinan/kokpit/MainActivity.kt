@@ -13,9 +13,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.github.yorulmazsinan.kokpit.dock.AppPickerScreen
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
+import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
 import io.github.yorulmazsinan.kokpit.home.HomeRoute
 import io.github.yorulmazsinan.kokpit.home.HomeUiState
 import io.github.yorulmazsinan.kokpit.home.HomeViewModel
+import io.github.yorulmazsinan.kokpit.settings.SettingsScreen
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
 import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
@@ -41,6 +43,7 @@ object Routes {
     const val HOME = "home"
     const val DRAWER = "drawer"
     const val SETTINGS = "settings"
+    const val INTRO = "intro"
     const val PICKER = "picker/{slot}"
     const val SYSTEM_TOOLS = "system-tools"
     const val EXPLORER = "explorer"
@@ -69,9 +72,25 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
                 nav.popBackStack()
             }
         }
-        composable(Routes.DRAWER) { SystemToolsPlaceholder(nav) }
-        composable(Routes.SETTINGS) { SystemToolsPlaceholder(nav) }
-        composable(Routes.SYSTEM_TOOLS) { SystemToolsPlaceholder(nav) }
+        composable(Routes.DRAWER) { AppDrawerScreen(container.installedApps, onBack = { nav.popBackStack() }) }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                container = container,
+                onBack = { nav.popBackStack() },
+                onPickApp = { nav.navigate("picker/${it.name}") },
+                onOpenIntro = { nav.navigate(Routes.INTRO) },
+                onOpenSystemTools = { nav.navigate(Routes.SYSTEM_TOOLS) },
+                onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
+            )
+        }
+        composable(Routes.INTRO) { }
+        composable(Routes.SYSTEM_TOOLS) {
+            SystemToolsScreen(
+                onBack = { nav.popBackStack() },
+                onOpenExplorer = { nav.navigate(Routes.EXPLORER) },
+                onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
+            )
+        }
         composable(Routes.EXPLORER) {
             ActivityExplorerScreen(onBack = { nav.popBackStack() }, onPickPackage = { nav.navigate("explorer/$it") })
         }
@@ -82,11 +101,3 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
     }
 }
 
-@Composable
-private fun SystemToolsPlaceholder(nav: androidx.navigation.NavController) {
-    SystemToolsScreen(
-        onBack = { nav.popBackStack() },
-        onOpenExplorer = { nav.navigate(Routes.EXPLORER) },
-        onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
-    )
-}

@@ -1,0 +1,72 @@
+package io.github.yorulmazsinan.kokpit.drawer
+
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
+import io.github.yorulmazsinan.kokpit.R
+import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val entries = remember { apps.launchable() }
+    ScreenScaffold(stringResource(R.string.dock_apps), onBack) {
+        LazyVerticalGrid(GridCells.Adaptive(150.dp), Modifier.padding(horizontal = 12.dp)) {
+            items(entries, key = { it.component.flattenToString() }) { app ->
+                val icon = remember(app.component) {
+                    runCatching { context.packageManager.getActivityIcon(app.component).toBitmap(96, 96).asImageBitmap() }.getOrNull()
+                }
+                Column(
+                    Modifier
+                        .heightIn(min = 120.dp)
+                        .combinedClickable(
+                            onClick = { safeStart(context, Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(app.component)) },
+                            onLongClick = {
+                                safeStart(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${app.packageName}")))
+                            },
+                        )
+                        .padding(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    if (icon != null) Image(icon, null, Modifier.size(56.dp))
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        app.label,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
