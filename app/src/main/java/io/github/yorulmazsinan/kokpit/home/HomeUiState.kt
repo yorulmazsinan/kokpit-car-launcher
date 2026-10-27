@@ -1,0 +1,30 @@
+package io.github.yorulmazsinan.kokpit.home
+
+import io.github.yorulmazsinan.kokpit.calendar.CalendarState
+import io.github.yorulmazsinan.kokpit.dock.DockSlot
+import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
+import io.github.yorulmazsinan.kokpit.media.NowPlayingState
+import io.github.yorulmazsinan.kokpit.weather.WeatherState
+
+enum class ThemeMode { DARK, LIGHT, AUTO }
+
+data class HomeUiState(
+    val weather: WeatherState,
+    val calendar: CalendarState,
+    val media: NowPlayingState,
+    val trip: TripSnapshot,
+    val locationPermissionMissing: Boolean,
+    val dock: Map<DockSlot, String?>,
+    val dark: Boolean,
+)
+
+class HomeActions(
+    val onDock: (DockSlot) -> Unit = {},
+    val onDockLongPress: (DockSlot) -> Unit = {},
+    val onAssistant: () -> Unit = {},
+    val onPlayPause: () -> Unit = {},
+    val onNext: () -> Unit = {},
+    val onPrevious: () -> Unit = {},
+    val onRequestPermissions: () -> Unit = {},
+    val onGrantMediaAccess: () -> Unit = {},
+)

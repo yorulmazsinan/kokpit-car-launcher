@@ -49,4 +49,22 @@
     <string name="dock_assistant">Asistan</string>
     <string name="app_picker_title">Uygulama Seç</string>
     <string name="app_picker_default">Varsayılanı Kullan</string>
+    <string name="weather_needs_internet">Hava durumu için internet gerekli</string>
+    <string name="weather_high_low">En yüksek %1$d° / en düşük %2$d°</string>
+    <string name="weather_updated_at">Son güncelleme %1$s</string>
+    <string name="calendar_permission">Takvim izni vermek için dokunun</string>
+    <string name="calendar_now">şimdi</string>
+    <string name="calendar_in">%1$s sonra</string>
+    <string name="duration_hours_minutes">%1$d sa %2$d dk</string>
+    <string name="duration_minutes">%1$d dk</string>
+    <string name="gps_searching">GPS aranıyor</string>
+    <string name="location_permission">Hız ve hava durumu için konum izni vermek üzere dokunun</string>
+    <string name="nothing_playing">Müzik çalmıyor</string>
+    <string name="media_access">Çalan müziği göstermek için bildirim erişimi vermek üzere dokunun</string>
+    <string name="media_previous">Önceki</string>
+    <string name="media_play_pause">Oynat veya duraklat</string>
+    <string name="media_next">Sonraki</string>
+    <string name="speed_unit_gps">km/s · GPS</string>
+    <string name="average_speed">Ortalama %1$d km/s</string>
+    <string name="assistant_not_set">Asistan yakında geliyor. Bu düğmeye bir uygulama atamak için Uygulamalar\'a uzun basıp Ayarlar\'a girin.</string>
 </resources>

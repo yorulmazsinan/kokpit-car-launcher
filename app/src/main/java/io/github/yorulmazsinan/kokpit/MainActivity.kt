@@ -4,27 +4,44 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.github.yorulmazsinan.kokpit.dock.AppPickerScreen
+import io.github.yorulmazsinan.kokpit.dock.DockSlot
+import io.github.yorulmazsinan.kokpit.home.HomeRoute
+import io.github.yorulmazsinan.kokpit.home.HomeUiState
+import io.github.yorulmazsinan.kokpit.home.HomeViewModel
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
 import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
 import io.github.yorulmazsinan.kokpit.system.SystemToolsScreen
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val container = (application as KokpitApp).container
         setContent {
-            KokpitTheme {
-                KokpitNavHost()
+            val home: HomeViewModel = viewModel { HomeViewModel(container) }
+            val state by home.state.collectAsStateWithLifecycle()
+            KokpitTheme(dark = state.dark) {
+                KokpitNavHost(container, state)
             }
         }
     }
 }
 
 object Routes {
+    const val HOME = "home"
+    const val DRAWER = "drawer"
+    const val SETTINGS = "settings"
+    const val PICKER = "picker/{slot}"
     const val SYSTEM_TOOLS = "system-tools"
     const val EXPLORER = "explorer"
     const val PACKAGE_ACTIVITIES = "explorer/{pkg}"
@@ -32,16 +49,29 @@ object Routes {
 }
 
 @Composable
-private fun KokpitNavHost() {
+private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
     val nav = rememberNavController()
-    NavHost(nav, startDestination = Routes.SYSTEM_TOOLS) {
-        composable(Routes.SYSTEM_TOOLS) {
-            SystemToolsScreen(
-                onBack = null,
-                onOpenExplorer = { nav.navigate(Routes.EXPLORER) },
-                onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
+    val scope = rememberCoroutineScope()
+    NavHost(nav, startDestination = Routes.HOME) {
+        composable(Routes.HOME) {
+            HomeRoute(
+                container = container,
+                state = homeState,
+                onOpenDrawer = { nav.navigate(Routes.DRAWER) },
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onPickApp = { nav.navigate("picker/${it.name}") },
             )
         }
+        composable(Routes.PICKER) { entry ->
+            val slot = DockSlot.valueOf(entry.arguments?.getString("slot").orEmpty())
+            AppPickerScreen(slot, onBack = { nav.popBackStack() }) { pkg ->
+                scope.launch { container.dock.setOverride(slot, pkg) }
+                nav.popBackStack()
+            }
+        }
+        composable(Routes.DRAWER) { SystemToolsPlaceholder(nav) }
+        composable(Routes.SETTINGS) { SystemToolsPlaceholder(nav) }
+        composable(Routes.SYSTEM_TOOLS) { SystemToolsPlaceholder(nav) }
         composable(Routes.EXPLORER) {
             ActivityExplorerScreen(onBack = { nav.popBackStack() }, onPickPackage = { nav.navigate("explorer/$it") })
         }
@@ -50,4 +80,13 @@ private fun KokpitNavHost() {
         }
         composable(Routes.DIAGNOSTICS) { DiagnosticsScreen(onBack = { nav.popBackStack() }) }
     }
+}
+
+@Composable
+private fun SystemToolsPlaceholder(nav: androidx.navigation.NavController) {
+    SystemToolsScreen(
+        onBack = { nav.popBackStack() },
+        onOpenExplorer = { nav.navigate(Routes.EXPLORER) },
+        onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
+    )
 }

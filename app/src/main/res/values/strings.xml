@@ -49,4 +49,22 @@
     <string name="dock_assistant">Assistant</string>
     <string name="app_picker_title">Choose App</string>
     <string name="app_picker_default">Use Default</string>
+    <string name="weather_needs_internet">Weather needs an internet connection</string>
+    <string name="weather_high_low">High %1$d° / low %2$d°</string>
+    <string name="weather_updated_at">Updated %1$s</string>
+    <string name="calendar_permission">Tap to allow calendar access</string>
+    <string name="calendar_now">now</string>
+    <string name="calendar_in">in %1$s</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="gps_searching">Searching for GPS</string>
+    <string name="location_permission">Tap to allow location for speed and weather</string>
+    <string name="nothing_playing">Nothing playing</string>
+    <string name="media_access">Tap to allow notification access to show music</string>
+    <string name="media_previous">Previous</string>
+    <string name="media_play_pause">Play or pause</string>
+    <string name="media_next">Next</string>
+    <string name="speed_unit_gps">km/h · GPS</string>
+    <string name="average_speed">Average %1$d km/h</string>
+    <string name="assistant_not_set">Assistant is coming soon. Long-press Apps → Settings to give this button an app.</string>
 </resources>

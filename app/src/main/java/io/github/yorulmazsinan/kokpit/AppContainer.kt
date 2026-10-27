@@ -10,12 +10,15 @@ import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
+import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.media.NowPlayingRepository
 import io.github.yorulmazsinan.kokpit.weather.OpenMeteoClient
 import io.github.yorulmazsinan.kokpit.weather.WeatherRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
@@ -35,6 +38,7 @@ class AppContainer(context: Context) {
     val nowPlaying = NowPlayingRepository(appContext)
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
+    val themeMode: Flow<ThemeMode> = flowOf(ThemeMode.DARK)
 
     fun start() {
         drive.start()
