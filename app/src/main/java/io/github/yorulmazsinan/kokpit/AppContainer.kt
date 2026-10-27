@@ -5,6 +5,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.yorulmazsinan.kokpit.calendar.CalendarRepository
+import io.github.yorulmazsinan.kokpit.dock.DockRepository
+import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
@@ -18,6 +20,7 @@ import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
 private val Context.weatherStore by preferencesDataStore("weather")
+private val Context.dockStore by preferencesDataStore("dock")
 
 /** Hand-wired holder for the app's long-lived repositories. */
 class AppContainer(context: Context) {
@@ -30,6 +33,8 @@ class AppContainer(context: Context) {
     val weather = WeatherRepository(OpenMeteoClient(http), appContext.weatherStore, locationSource::lastKnown)
     val calendar = CalendarRepository(appContext, scope)
     val nowPlaying = NowPlayingRepository(appContext)
+    val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
+    val dock = DockRepository(appContext.dockStore, installedApps, scope)
 
     fun start() {
         drive.start()

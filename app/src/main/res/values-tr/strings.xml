@@ -40,4 +40,13 @@
     <string name="weather_snow">Karlı</string>
     <string name="weather_showers">Sağanak</string>
     <string name="weather_thunder">Gök gürültülü fırtına</string>
+    <string name="dock_carplay">CarPlay</string>
+    <string name="dock_bluetooth">Bluetooth</string>
+    <string name="dock_phone">Telefon</string>
+    <string name="dock_radio">Radyo</string>
+    <string name="dock_maps">Harita</string>
+    <string name="dock_apps">Uygulamalar</string>
+    <string name="dock_assistant">Asistan</string>
+    <string name="app_picker_title">Uygulama Seç</string>
+    <string name="app_picker_default">Varsayılanı Kullan</string>
 </resources>

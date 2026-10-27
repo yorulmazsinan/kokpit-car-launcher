@@ -40,4 +40,13 @@
     <string name="weather_snow">Snow</string>
     <string name="weather_showers">Showers</string>
     <string name="weather_thunder">Thunderstorm</string>
+    <string name="dock_carplay">CarPlay</string>
+    <string name="dock_bluetooth">Bluetooth</string>
+    <string name="dock_phone">Phone</string>
+    <string name="dock_radio">Radio</string>
+    <string name="dock_maps">Maps</string>
+    <string name="dock_apps">Apps</string>
+    <string name="dock_assistant">Assistant</string>
+    <string name="app_picker_title">Choose App</string>
+    <string name="app_picker_default">Use Default</string>
 </resources>
