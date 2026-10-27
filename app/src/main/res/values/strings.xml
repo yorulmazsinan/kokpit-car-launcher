@@ -95,4 +95,21 @@
     <string name="settings_about">About</string>
     <string name="settings_license">Open source, Apache License 2.0</string>
     <string name="settings_source_code">Source Code</string>
+    <string name="service_running">Kokpit is running</string>
+    <string name="wifi_off_title">Wi-Fi is off</string>
+    <string name="wifi_off_text">Tap to turn on Wi-Fi and join your phone</string>
+    <string name="intro_mode_off">Off</string>
+    <string name="intro_mode_selected">Selected</string>
+    <string name="intro_mode_sequential">In Turn</string>
+    <string name="intro_mode_random">Random</string>
+    <string name="intro_every_wake">Play on Every Wake-Up</string>
+    <string name="intro_every_wake_help">When off, short stops under 30 minutes skip the video.</string>
+    <string name="intro_with_sound">Play with Sound</string>
+    <string name="intro_add">Add Videos from USB</string>
+    <string name="intro_add_help">Videos are copied to the unit, so you can remove the USB stick afterwards. MP4 (H.264), up to 20 MB; 3–8 seconds at 1024×600 looks best.</string>
+    <string name="intro_library">Your Videos</string>
+    <string name="intro_use_this">Use This</string>
+    <string name="intro_preview">Preview</string>
+    <string name="intro_delete">Delete</string>
+    <string name="intro_import_failed">Some files were skipped: only MP4 videos up to 20 MB can be added.</string>
 </resources>

@@ -17,6 +17,7 @@ import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
 import io.github.yorulmazsinan.kokpit.home.HomeRoute
 import io.github.yorulmazsinan.kokpit.home.HomeUiState
 import io.github.yorulmazsinan.kokpit.home.HomeViewModel
+import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
 import io.github.yorulmazsinan.kokpit.settings.SettingsScreen
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
@@ -83,7 +84,7 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
                 onOpenDiagnostics = { nav.navigate(Routes.DIAGNOSTICS) },
             )
         }
-        composable(Routes.INTRO) { }
+        composable(Routes.INTRO) { IntroSettingsScreen(container, onBack = { nav.popBackStack() }) }
         composable(Routes.SYSTEM_TOOLS) {
             SystemToolsScreen(
                 onBack = { nav.popBackStack() },
