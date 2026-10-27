@@ -31,4 +31,13 @@
     <string name="compass_sw">GB</string>
     <string name="compass_w">B</string>
     <string name="compass_nw">KB</string>
+    <string name="weather_clear">Açık</string>
+    <string name="weather_partly_cloudy">Parçalı bulutlu</string>
+    <string name="weather_cloudy">Bulutlu</string>
+    <string name="weather_fog">Sisli</string>
+    <string name="weather_drizzle">Çiseleyen yağmur</string>
+    <string name="weather_rain">Yağmurlu</string>
+    <string name="weather_snow">Karlı</string>
+    <string name="weather_showers">Sağanak</string>
+    <string name="weather_thunder">Gök gürültülü fırtına</string>
 </resources>
