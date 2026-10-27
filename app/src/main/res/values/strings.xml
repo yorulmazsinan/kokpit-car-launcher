@@ -112,4 +112,5 @@
     <string name="intro_preview">Preview</string>
     <string name="intro_delete">Delete</string>
     <string name="intro_import_failed">Some files were skipped: only MP4 videos up to 20 MB can be added.</string>
+    <string name="settings_password_reenter">The saved hotspot password can\'t be read anymore. Enter it again and tap Save.</string>
 </resources>

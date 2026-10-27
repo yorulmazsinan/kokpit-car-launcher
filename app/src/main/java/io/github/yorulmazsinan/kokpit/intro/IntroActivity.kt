@@ -16,6 +16,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import io.github.yorulmazsinan.kokpit.KokpitApp
+import io.github.yorulmazsinan.kokpit.MainActivity
 
 /** Full-screen intro video; any touch, the end of the clip or any error returns to the home screen. */
 class IntroActivity : ComponentActivity() {
@@ -50,12 +51,17 @@ class IntroActivity : ComponentActivity() {
             setOnTouchListener { _, _ -> finish(); true }
         }
         setContentView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        view.postDelayed({ if (!isFinishing) finish() }, MAX_PLAY_MS)
         exo.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)))
         exo.prepare()
         exo.play()
     }
 
     override fun finish() {
+        // Spec §7b: the clip hands over to the home screen, not to whatever ran before sleep.
+        if (intent.getBooleanExtra(EXTRA_RETURN_HOME, false)) {
+            startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
         super.finish()
         @Suppress("DEPRECATION")
         overridePendingTransition(0, android.R.anim.fade_out)
@@ -70,8 +76,13 @@ class IntroActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_ID = "video_id"
         private const val EXTRA_SOUND = "with_sound"
+        private const val EXTRA_RETURN_HOME = "return_home"
+        private const val MAX_PLAY_MS = 15_000L
 
-        fun intent(context: Context, videoId: String, withSound: Boolean): Intent =
-            Intent(context, IntroActivity::class.java).putExtra(EXTRA_ID, videoId).putExtra(EXTRA_SOUND, withSound)
+        fun intent(context: Context, videoId: String, withSound: Boolean, returnHome: Boolean = false): Intent =
+            Intent(context, IntroActivity::class.java)
+                .putExtra(EXTRA_ID, videoId)
+                .putExtra(EXTRA_SOUND, withSound)
+                .putExtra(EXTRA_RETURN_HOME, returnHome)
     }
 }

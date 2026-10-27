@@ -112,4 +112,5 @@
     <string name="intro_preview">Önizle</string>
     <string name="intro_delete">Sil</string>
     <string name="intro_import_failed">Bazı dosyalar eklenmedi: yalnız 20 MB\'a kadar MP4 videolar eklenebilir.</string>
+    <string name="settings_password_reenter">Kayıtlı erişim noktası parolası artık okunamıyor. Parolayı yeniden girip Kaydet\'e dokunun.</string>
 </resources>

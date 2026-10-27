@@ -21,6 +21,7 @@ data class KokpitSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
     val hotspotSsid: String? = null,
     val hotspotPassword: String? = null,
+    val hotspotPasswordUnreadable: Boolean = false,
     val autoWifi: Boolean = true,
     val autoCarPlayOnUsb: Boolean = false,
     val intro: IntroSettings = IntroSettings(),
@@ -44,6 +45,7 @@ class SettingsRepository(
         themeMode = p[THEME]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.DARK,
         hotspotSsid = p[SSID],
         hotspotPassword = p[PASSWORD]?.let(secrets::decrypt),
+        hotspotPasswordUnreadable = p[PASSWORD] != null && p[PASSWORD]?.let(secrets::decrypt) == null,
         autoWifi = p[AUTO_WIFI] ?: true,
         autoCarPlayOnUsb = p[AUTO_CARPLAY] ?: false,
         intro = IntroSettings(
@@ -58,7 +60,12 @@ class SettingsRepository(
     private fun write(p: MutablePreferences, s: KokpitSettings) {
         p[THEME] = s.themeMode.name
         p.setOrRemove(SSID, s.hotspotSsid)
-        p.setOrRemove(PASSWORD, s.hotspotPassword?.let(secrets::encrypt))
+        when {
+            s.hotspotPassword != null -> runCatching { secrets.encrypt(s.hotspotPassword) }
+                .onSuccess { p[PASSWORD] = it }
+                .onFailure { p.remove(PASSWORD) }
+            !s.hotspotPasswordUnreadable -> p.remove(PASSWORD)
+        }
         p[AUTO_WIFI] = s.autoWifi
         p[AUTO_CARPLAY] = s.autoCarPlayOnUsb
         p[INTRO_MODE] = s.intro.mode.name

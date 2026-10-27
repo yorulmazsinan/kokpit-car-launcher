@@ -18,7 +18,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -36,18 +40,20 @@ import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 @Composable
 fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit) {
     val context = LocalContext.current
-    val entries = remember { apps.launchable() }
+    val entries by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { apps.launchable() } }
     ScreenScaffold(stringResource(R.string.dock_apps), onBack) {
         LazyVerticalGrid(GridCells.Adaptive(150.dp), Modifier.padding(horizontal = 12.dp)) {
             items(entries, key = { it.component.flattenToString() }) { app ->
-                val icon = remember(app.component) {
-                    runCatching { context.packageManager.getActivityIcon(app.component).toBitmap(96, 96).asImageBitmap() }.getOrNull()
+                val icon by produceState<ImageBitmap?>(null, app.component) {
+                    value = withContext(Dispatchers.IO) {
+                        runCatching { context.packageManager.getActivityIcon(app.component).toBitmap(96, 96).asImageBitmap() }.getOrNull()
+                    }
                 }
                 Column(
                     Modifier
                         .heightIn(min = 120.dp)
                         .combinedClickable(
-                            onClick = { safeStart(context, Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER).setComponent(app.component)) },
+                            onClick = { safeStart(context, launcherIntent(app.component)) },
                             onLongClick = {
                                 safeStart(context, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${app.packageName}")))
                             },
@@ -55,7 +61,7 @@ fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit) {
                         .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    if (icon != null) Image(icon, null, Modifier.size(56.dp))
+                    icon?.let { Image(it, null, Modifier.size(56.dp)) } ?: Spacer(Modifier.size(56.dp))
                     Spacer(Modifier.height(8.dp))
                     Text(
                         app.label,

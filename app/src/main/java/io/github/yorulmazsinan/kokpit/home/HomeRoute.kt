@@ -49,12 +49,14 @@ fun HomeRoute(
         }
     }
     LaunchedEffect(Unit) {
+        if (container.permissionsRequested) return@LaunchedEffect
+        container.permissionsRequested = true
         val missing = RUNTIME_PERMISSIONS.filter { context.checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED }
         if (missing.isNotEmpty()) permissionLauncher.launch(missing.toTypedArray())
     }
     LifecycleResumeEffect(Unit) {
         container.nowPlaying.refreshAccess()
-        container.dock.refreshInstalled()
+        container.scope.launch { container.dock.refreshInstalled() }
         onPauseOrDispose { }
     }
 

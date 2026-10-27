@@ -22,11 +22,13 @@ import io.github.yorulmazsinan.kokpit.settings.KeystoreSecretBox
 import io.github.yorulmazsinan.kokpit.settings.SettingsRepository
 import io.github.yorulmazsinan.kokpit.weather.OpenMeteoClient
 import io.github.yorulmazsinan.kokpit.weather.WeatherRepository
+import io.github.yorulmazsinan.kokpit.weather.WeatherState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.File
 import kotlinx.coroutines.launch
@@ -54,7 +56,17 @@ class AppContainer(context: Context) {
     val introLibrary = IntroVideoLibrary(File(appContext.filesDir, "intro"))
     val wifi = WifiAutoConnector(appContext, settings)
 
+    /** Runtime permissions are asked for once per process; afterwards the cards offer tap-to-grant. */
+    var permissionsRequested = false
+
     fun start() {
+        // The process may have been (re)started while the unit was awake: run the wake-up connect now.
+        wifi.reconnect(scope)
+        scope.launch { dock.refreshInstalled() }
+        scope.launch {
+            drive.state.first { it.hasFix }
+            if (weather.state.value !is WeatherState.Fresh) weather.refresh()
+        }
         KokpitService.createChannel(appContext)
         KokpitService.start(appContext)
         scope.launch {

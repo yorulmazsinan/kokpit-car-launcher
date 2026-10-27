@@ -62,7 +62,7 @@ fun PackageActivitiesScreen(packageName: String, onBack: () -> Unit) {
         LazyColumn {
             items(activities, key = { it.className }) { component: ComponentName ->
                 ListRow(component.className.substringAfterLast('.'), component.className) {
-                    safeStart(context, Intent().setComponent(component))
+                    safeStart(context, Intent().setComponent(component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
             }
         }

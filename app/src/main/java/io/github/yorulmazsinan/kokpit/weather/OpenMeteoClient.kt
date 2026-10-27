@@ -24,7 +24,7 @@ class OpenMeteoClient(
     suspend fun fetch(lat: Double, lon: Double): Weather = withContext(Dispatchers.IO) {
         val url = String.format(
             Locale.US,
-            "%s/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,is_day" +
+            "%s/v1/forecast?latitude=%.2f&longitude=%.2f&current=temperature_2m,weather_code,is_day" +
                 "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto&forecast_days=1",
             baseUrl, lat, lon,
         )

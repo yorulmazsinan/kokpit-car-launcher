@@ -6,6 +6,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +21,7 @@ class DockRepository(
     private val apps: InstalledApps,
     scope: CoroutineScope,
 ) {
-    private val installed = MutableStateFlow(apps.packages())
+    private val installed = MutableStateFlow<Set<String>>(emptySet())
 
     val targets: StateFlow<Map<DockSlot, String?>> =
         combine(store.data.map { prefs -> DockSlot.entries.associateWith { prefs[key(it)] } }, installed) { overrides, pkgs ->
@@ -32,8 +35,14 @@ class DockRepository(
     }
 
     /** Call when apps may have been installed or removed. */
-    fun refreshInstalled() {
-        installed.value = apps.packages()
+    suspend fun refreshInstalled() {
+        installed.value = withContext(Dispatchers.IO) { apps.packages() }
+    }
+
+    /** Current target read straight from disk, for callers that may run before [targets] is warm. */
+    suspend fun target(slot: DockSlot): String? {
+        val override = store.data.first()[key(slot)]
+        return resolveDockTarget(slot, withContext(Dispatchers.IO) { apps.packages() }, override)
     }
 
     private fun key(slot: DockSlot) = stringPreferencesKey("dock_${slot.name.lowercase()}")

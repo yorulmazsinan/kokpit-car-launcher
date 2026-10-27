@@ -37,6 +37,7 @@ class TripTracker(private val resetAfterSleepMs: Long = 30 * 60_000L) {
         val slept = sleptAtMs
         if (slept != null && elapsedMs - slept > resetAfterSleepMs) reset()
         awakeSinceMs = elapsedMs
+        sleptAtMs = null
         lastAccepted = null
         lastFix = null
     }
@@ -57,6 +58,13 @@ class TripTracker(private val resetAfterSleepMs: Long = 30 * 60_000L) {
             if (seconds <= 0) return
             val kmh = meters / seconds * 3.6
             if (kmh > MAX_PLAUSIBLE_KMH) return
+            val moving = fix.speedMps?.let { it >= MIN_MOVING_MPS } ?: (meters >= maxOf(previous.accuracyM, fix.accuracyM))
+            if (!moving) {
+                // Parked or idling: GPS wanders a few meters; keep the anchor, add nothing.
+                lastFix = fix
+                lastSpeedMps = fix.speedMps ?: 0f
+                return
+            }
             distanceMeters += meters
             computedSpeed = (meters / seconds).toFloat()
         }
@@ -88,6 +96,7 @@ class TripTracker(private val resetAfterSleepMs: Long = 30 * 60_000L) {
     private companion object {
         const val MAX_ACCURACY_M = 50f
         const val MAX_PLAUSIBLE_KMH = 250.0
+        const val MIN_MOVING_MPS = 1f
         const val STALE_FIX_MS = 5_000L
         const val MIN_AWAKE_FOR_AVERAGE_MS = 60_000L
         const val EARTH_RADIUS_M = 6_371_000.0

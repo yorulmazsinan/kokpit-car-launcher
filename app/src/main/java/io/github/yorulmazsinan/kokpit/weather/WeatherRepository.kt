@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 /**
@@ -34,15 +33,18 @@ class WeatherRepository(
 
     suspend fun refresh() {
         if (cached == null) cached = readCache()
+        // Show what we have right away; the network may take its full timeout on wake-up.
+        cached?.let { _state.value = classify(it) }
         val position = location()
         if (position != null) {
             try {
                 val fresh = client.fetch(position.first, position.second).copy(fetchedAtEpochMs = clock())
                 writeCache(fresh)
                 cached = fresh
-            } catch (e: IOException) {
-                // Offline or server trouble: fall through to the cached forecast.
-            } catch (e: SerializationException) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Offline, server trouble or an unexpected response: keep the cached forecast.
             }
         }
         _state.value = cached?.let(::classify) ?: WeatherState.NoData

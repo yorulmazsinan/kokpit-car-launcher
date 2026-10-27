@@ -45,7 +45,10 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             Button(onClick = { copyToClipboard(context, text) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_copy))
             }
-            OutlinedButton(onClick = { saveLauncher.launch("kokpit-diagnostics.txt") }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
+            OutlinedButton(onClick = {
+                runCatching { saveLauncher.launch("kokpit-diagnostics.txt") }
+                    .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
+            }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_save))
             }
         }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -27,12 +28,12 @@ class SettingsRepositoryTest {
     @get:Rule val tmp = TemporaryFolder()
     private val file by lazy { File(tmp.root, "settings.preferences_pb") }
 
-    private fun <T> withRepository(block: suspend (SettingsRepository) -> T): T = runBlocking {
+    private fun <T> withRepository(secrets: SecretBox = FakeSecretBox, block: suspend (SettingsRepository) -> T): T = runBlocking {
         val job = Job()
         val scope = CoroutineScope(Dispatchers.IO + job)
         val store = PreferenceDataStoreFactory.create(scope = scope) { file }
         try {
-            block(SettingsRepository(store, FakeSecretBox, scope))
+            block(SettingsRepository(store, secrets, scope))
         } finally {
             job.cancelAndJoin()
         }
@@ -75,5 +76,24 @@ class SettingsRepositoryTest {
     fun passwordIsNotStoredInPlainText() {
         withRepository { repo -> repo.update { it.copy(hotspotPassword = "gizliparola123") } }
         assertFalse(String(file.readBytes(), Charsets.ISO_8859_1).contains("gizliparola123"))
+    }
+
+    private object BrokenSecretBox : SecretBox {
+        override fun encrypt(plain: String): String = throw java.security.KeyStoreException("keymaster gone")
+        override fun decrypt(encoded: String): String? = null
+    }
+
+    @Test
+    fun encryptFailureDoesNotThrow() = withRepository(BrokenSecretBox) { repo ->
+        repo.update { it.copy(hotspotSsid = "iPhone", hotspotPassword = "gizliparola123") }
+        assertEquals("iPhone", repo.current().hotspotSsid)
+    }
+
+    @Test
+    fun undecryptablePasswordAsksForReentry() {
+        withRepository { repo -> repo.update { it.copy(hotspotPassword = "gizliparola123") } }
+        val s = withRepository(BrokenSecretBox) { it.current() }
+        assertEquals(null, s.hotspotPassword)
+        assertTrue(s.hotspotPasswordUnreadable)
     }
 }

@@ -89,7 +89,10 @@ fun IntroSettingsScreen(container: AppContainer, onBack: () -> Unit) {
             item { ToggleRow(stringResource(R.string.intro_with_sound), intro.withSound) { on -> update { it.copy(withSound = on) } } }
             item {
                 Button(
-                    onClick = { picker.launch(arrayOf("video/mp4")) },
+                    onClick = {
+                        runCatching { picker.launch(arrayOf("video/mp4")) }
+                            .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
+                    },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
                 ) { Text(stringResource(R.string.intro_add)) }
             }

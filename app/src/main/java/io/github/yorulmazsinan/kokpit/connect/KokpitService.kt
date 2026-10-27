@@ -88,7 +88,7 @@ class KokpitService : Service() {
             is WakeEvent.Wake -> {
                 container.drive.onWake(event.elapsedMs)
                 container.scope.launch { playIntro(event.sleptMs) }
-                container.scope.launch { container.wifi.onWake() }
+                container.wifi.reconnect(container.scope)
             }
         }
     }
@@ -99,7 +99,7 @@ class KokpitService : Service() {
         val videos = container.introLibrary.list()
         val video = pickIntroVideo(intro, videos, sleptMs, Random.Default) ?: return
         container.settings.update { it.copy(intro = it.intro.copy(lastPlayedIndex = videos.indexOf(video))) }
-        startActivity(IntroActivity.intent(this, video.id, intro.withSound).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        startActivity(IntroActivity.intent(this, video.id, intro.withSound, returnHome = true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     companion object {

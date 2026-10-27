@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.wifi.SupplicantState
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSuggestion
@@ -16,7 +17,11 @@ import androidx.core.app.NotificationCompat
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.settings.KokpitSettings
 import io.github.yorulmazsinan.kokpit.settings.SettingsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * On wake, gets the unit onto the user's phone hotspot. Android 8.1–9 lets an app switch
@@ -29,19 +34,27 @@ class WifiAutoConnector(
     private val retry: RetryPolicy = RetryPolicy(),
     private val clock: () -> Long = SystemClock::elapsedRealtime,
 ) {
-    private val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    private val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+    private var job: Job? = null
 
-    suspend fun onWake() {
+    /** Starts (or restarts) the connect routine; safe to call repeatedly. */
+    fun reconnect(scope: CoroutineScope) {
+        job?.cancel()
+        job = scope.launch(Dispatchers.IO) { onWake() }
+    }
+
+    private suspend fun onWake() {
+        val wifi = wifi ?: return
         val s = settings.current()
         val ssid = s.hotspotSsid
         if (!s.autoWifi || ssid == null) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            suggest(s, ssid)
+            suggest(wifi, s, ssid)
             return
         }
         val started = clock()
         while (true) {
-            if (runCatching { connectLegacy(ssid, s.hotspotPassword) }.getOrDefault(false)) return
+            if (runCatching { connectLegacy(wifi, ssid, s.hotspotPassword) }.getOrDefault(false)) return
             val wait = retry.nextAttemptDelay(started, clock()) ?: return
             delay(wait)
         }
@@ -50,9 +63,8 @@ class WifiAutoConnector(
     /** One attempt; true once connected to [ssid]. */
     @Suppress("DEPRECATION")
     @SuppressLint("MissingPermission")
-    private fun connectLegacy(ssid: String, password: String?): Boolean {
+    private fun connectLegacy(wifi: WifiManager, ssid: String, password: String?): Boolean {
         if (!wifi.isWifiEnabled) wifi.isWifiEnabled = true
-        if (wifi.connectionInfo?.ssid == quoted(ssid)) return true
         val existing = wifi.configuredNetworks.orEmpty().firstOrNull { it.SSID == quoted(ssid) }
         val id = existing?.networkId ?: wifi.addNetwork(
             WifiConfiguration().apply {
@@ -64,12 +76,16 @@ class WifiAutoConnector(
                 }
             },
         )
-        if (id != -1) wifi.enableNetwork(id, true)
+        if (id == -1) return false
+        val info = wifi.connectionInfo
+        // Compare by network id: without location permission 8.1 reports "<unknown ssid>".
+        if (info?.networkId == id && info.supplicantState == SupplicantState.COMPLETED) return true
+        wifi.enableNetwork(id, true)
         return false
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun suggest(s: KokpitSettings, ssid: String) {
+    private fun suggest(wifi: WifiManager, s: KokpitSettings, ssid: String) {
         val builder = WifiNetworkSuggestion.Builder().setSsid(ssid)
         s.hotspotPassword?.takeIf { it.isNotEmpty() }?.let(builder::setWpa2Passphrase)
         runCatching { wifi.addNetworkSuggestions(listOf(builder.build())) }

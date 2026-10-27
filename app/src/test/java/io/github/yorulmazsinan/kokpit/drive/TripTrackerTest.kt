@@ -83,4 +83,36 @@ class TripTrackerTest {
         assertFalse(stale.hasFix)
         assertNull(stale.speedKmh)
     }
+
+    @Test
+    fun stationaryJitterAddsNoDistance() {
+        tracker.onWake(0)
+        val random = java.util.Random(42)
+        for (i in 1..600) {
+            val dLat = (random.nextDouble() - 0.5) * 10 / METERS_PER_DEG_LAT
+            val dLon = (random.nextDouble() - 0.5) * 10 / METERS_PER_DEG_LAT
+            val accuracy = 5f + random.nextFloat() * 15f
+            tracker.onFix(Fix(i * 1000L, lat + dLat, 29.0 + dLon, accuracy, speedMps = 0.3f, bearingDeg = null))
+        }
+        assertTrue("jitter added ${tracker.distanceMeters} m", tracker.distanceMeters < 50.0)
+    }
+
+    @Test
+    fun slowCrawlStillCounts() {
+        tracker.onWake(0)
+        for (i in 1..120) {
+            tracker.onFix(Fix(i * 1000L, lat + i * 2.0 / METERS_PER_DEG_LAT, 29.0, accuracyM = 5f, speedMps = 2f, bearingDeg = 0f))
+        }
+        assertEquals(238.0, tracker.distanceMeters, 10.0)
+    }
+
+    @Test
+    fun secondWakeWithoutSleepDoesNotReset() {
+        tracker.onWake(0)
+        drive(0, 10 * MIN, 10_000.0)
+        tracker.onSleep(10 * MIN)
+        tracker.onWake(11 * MIN)
+        tracker.onWake(50 * MIN)
+        assertTrue(tracker.distanceMeters > 9_000)
+    }
 }

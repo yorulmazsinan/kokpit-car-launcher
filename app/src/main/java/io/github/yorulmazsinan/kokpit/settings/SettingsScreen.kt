@@ -111,10 +111,20 @@ fun SettingsScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     )
                     Button(
-                        onClick = { update { it.copy(hotspotSsid = ssid.trim().ifEmpty { null }, hotspotPassword = password.ifEmpty { null }) } },
+                        onClick = {
+                            scope.launch {
+                                container.settings.update {
+                                    it.copy(hotspotSsid = ssid.trim().ifEmpty { null }, hotspotPassword = password.ifEmpty { null }, hotspotPasswordUnreadable = false)
+                                }
+                                container.wifi.reconnect(container.scope)
+                            }
+                        },
                         modifier = Modifier.heightIn(min = Dimens.MinTouch),
                     ) { Text(stringResource(R.string.save)) }
                 }
+            }
+            if (settings.hotspotPasswordUnreadable) {
+                item { HelpText(stringResource(R.string.settings_password_reenter)) }
             }
             item { HelpText(stringResource(R.string.settings_iphone_hotspot_help)) }
             item {
