@@ -4,9 +4,11 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import androidx.datastore.preferences.preferencesDataStore
+import io.github.yorulmazsinan.kokpit.calendar.CalendarRepository
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
+import io.github.yorulmazsinan.kokpit.media.NowPlayingRepository
 import io.github.yorulmazsinan.kokpit.weather.OpenMeteoClient
 import io.github.yorulmazsinan.kokpit.weather.WeatherRepository
 import kotlinx.coroutines.CoroutineScope
@@ -26,10 +28,14 @@ class AppContainer(context: Context) {
     val locationSource = LocationSource(appContext)
     val drive = DriveRepository(scope, locationSource, TripTracker())
     val weather = WeatherRepository(OpenMeteoClient(http), appContext.weatherStore, locationSource::lastKnown)
+    val calendar = CalendarRepository(appContext, scope)
+    val nowPlaying = NowPlayingRepository(appContext)
 
     fun start() {
         drive.start()
         weather.start(scope)
+        calendar.start()
+        nowPlaying.refreshAccess()
         val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
         connectivity.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
