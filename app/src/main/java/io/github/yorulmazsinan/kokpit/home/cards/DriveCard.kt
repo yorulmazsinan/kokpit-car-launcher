@@ -3,13 +3,12 @@ package io.github.yorulmazsinan.kokpit.home.cards
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -26,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -52,9 +52,7 @@ fun SpeedCard(trip: TripSnapshot, permissionMissing: Boolean, onRequestPermissio
             }
             return@KokpitCard
         }
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            SpeedGauge(if (trip.hasFix) trip.speedKmh else null, Modifier.aspectRatio(1f))
-        }
+        SpeedGauge(if (trip.hasFix) trip.speedKmh else null, Modifier.fillMaxSize())
     }
 }
 
@@ -83,22 +81,43 @@ fun CompassCard(trip: TripSnapshot, modifier: Modifier = Modifier) {
     }
 }
 
+data class GaugeGeometry(val centerX: Float, val centerY: Float, val radius: Float)
+
+/**
+ * The 240° arc is open at the bottom: its visible height is 1.5 × radius. Centre that
+ * visible shape, not the full circle, so the gaps above and below are equal.
+ */
+fun gaugeGeometry(width: Float, height: Float, stroke: Float): GaugeGeometry {
+    val radius = minOf((height - stroke) / 1.5f, (width - stroke) / 2f)
+    val visibleHeight = radius * 1.5f + stroke
+    val top = (height - visibleHeight) / 2f
+    return GaugeGeometry(centerX = width / 2f, centerY = top + stroke / 2f + radius, radius = radius)
+}
+
 @Composable
 private fun SpeedGauge(speedKmh: Int?, modifier: Modifier) {
     val track = MaterialTheme.colorScheme.outlineVariant
     val fill = MaterialTheme.colorScheme.primary
-    Box(modifier, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize().padding(2.dp)) {
-            val stroke = size.minDimension * 0.075f
-            val arcSize = Size(size.minDimension - stroke, size.minDimension - stroke)
-            val topLeft = Offset((size.width - arcSize.width) / 2, (size.height - arcSize.height) / 2)
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier) {
+        val w = constraints.maxWidth.toFloat()
+        val h = constraints.maxHeight.toFloat()
+        val stroke = minOf(w, h) * 0.07f
+        val g = gaugeGeometry(w, h, stroke)
+        Canvas(Modifier.fillMaxSize()) {
+            val topLeft = Offset(g.centerX - g.radius, g.centerY - g.radius)
+            val arcSize = Size(g.radius * 2, g.radius * 2)
             drawArc(track, START, SWEEP, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
             val fraction = ((speedKmh ?: 0) / GAUGE_MAX_KMH).coerceIn(0f, 1f)
             if (fraction > 0f) {
                 drawArc(fill, START, SWEEP * fraction, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
             }
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            Modifier.fillMaxSize().offset(y = with(density) { (g.centerY - h / 2f).toDp() }),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
             Text(
                 speedKmh?.toString() ?: "–",
                 style = TextStyle(fontFamily = KokpitFonts.condensed, fontSize = 56.sp, lineHeight = 56.sp),

@@ -135,4 +135,21 @@
     <string name="compass_full_sw">Southwest</string>
     <string name="compass_full_w">West</string>
     <string name="compass_full_nw">Northwest</string>
+    <string name="settings_preview">New Screens (Preview)</string>
+    <string name="settings_preview_help">Kokpit\'s own Phone, Bluetooth Music and Radio screens. The dock buttons keep opening the unit\'s screens until radio and Bluetooth controls are connected.</string>
+    <string name="phone_title">Phone</string>
+    <string name="phone_recent">Recent</string>
+    <string name="phone_contacts">Contacts</string>
+    <string name="phone_favourites">Favourites</string>
+    <string name="phone_call">Call</string>
+    <string name="phone_delete">Delete</string>
+    <string name="phone_no_calls">No calls yet. They appear here when the unit records them.</string>
+    <string name="phone_no_contacts">No contacts. Sync your phone book from the unit\'s Bluetooth settings.</string>
+    <string name="phone_no_favourites">No favourite contacts.</string>
+    <string name="bt_music_title">Bluetooth Music</string>
+    <string name="radio_title">Radio</string>
+    <string name="radio_preview_notice">Preview: tuning is not connected to the radio yet. Tap here to open the unit\'s radio.</string>
+    <string name="radio_down">Tune down</string>
+    <string name="radio_up">Tune up</string>
+    <string name="radio_save">Save</string>
 </resources>

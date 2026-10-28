@@ -21,6 +21,10 @@ data class NowPlaying(
     val sourceLabel: String,
     val art: Bitmap?,
     val isPlaying: Boolean,
+    val durationMs: Long = 0L,
+    val positionMs: Long = 0L,
+    /** `elapsedRealtime` when [positionMs] was measured, to extrapolate while playing. */
+    val positionAtElapsedMs: Long = 0L,
 )
 
 sealed interface NowPlayingState {
@@ -107,6 +111,9 @@ class NowPlayingRepository(private val context: Context) {
                     art = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
                         ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART),
                     isPlaying = chosen.isPlaying,
+                    durationMs = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L,
+                    positionMs = controller.playbackState?.position ?: 0L,
+                    positionAtElapsedMs = controller.playbackState?.lastPositionUpdateTime ?: 0L,
                 ),
             )
         }

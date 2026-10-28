@@ -27,6 +27,8 @@ data class KokpitSettings(
     val autoWifi: Boolean = true,
     val autoCarPlayOnUsb: Boolean = false,
     val intro: IntroSettings = IntroSettings(),
+    val radioFrequency: Int = 984,
+    val radioPresets: List<Int> = emptyList(),
 )
 
 class SettingsRepository(
@@ -51,6 +53,8 @@ class SettingsRepository(
         hotspotPasswordUnreadable = p[PASSWORD] != null && p[PASSWORD]?.let(secrets::decrypt) == null,
         autoWifi = p[AUTO_WIFI] ?: true,
         autoCarPlayOnUsb = p[AUTO_CARPLAY] ?: false,
+        radioFrequency = p[RADIO_FREQ] ?: 984,
+        radioPresets = p[RADIO_PRESETS]?.split(',')?.mapNotNull { it.toIntOrNull() }.orEmpty(),
         intro = IntroSettings(
             mode = p[INTRO_MODE]?.let { runCatching { IntroMode.valueOf(it) }.getOrNull() } ?: IntroMode.OFF,
             selectedId = p[INTRO_SELECTED],
@@ -71,6 +75,8 @@ class SettingsRepository(
             !s.hotspotPasswordUnreadable -> p.remove(PASSWORD)
         }
         p[AUTO_WIFI] = s.autoWifi
+        p[RADIO_FREQ] = s.radioFrequency
+        p[RADIO_PRESETS] = s.radioPresets.joinToString(",")
         p[AUTO_CARPLAY] = s.autoCarPlayOnUsb
         p[INTRO_MODE] = s.intro.mode.name
         p.setOrRemove(INTRO_SELECTED, s.intro.selectedId)
@@ -89,6 +95,8 @@ class SettingsRepository(
         val SSID = stringPreferencesKey("hotspot_ssid")
         val PASSWORD = stringPreferencesKey("hotspot_password_sealed")
         val AUTO_WIFI = booleanPreferencesKey("auto_wifi")
+        val RADIO_FREQ = intPreferencesKey("radio_frequency")
+        val RADIO_PRESETS = stringPreferencesKey("radio_presets")
         val AUTO_CARPLAY = booleanPreferencesKey("auto_carplay_usb")
         val INTRO_MODE = stringPreferencesKey("intro_mode")
         val INTRO_SELECTED = stringPreferencesKey("intro_selected")

@@ -54,6 +54,7 @@ fun SettingsScreen(
     onOpenIntro: () -> Unit,
     onOpenSystemTools: () -> Unit,
     onOpenDiagnostics: () -> Unit,
+    onOpenPreview: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -167,6 +168,12 @@ fun SettingsScreen(
                     safeStart(context, intent)
                 }
             }
+
+            item { SectionHeader(stringResource(R.string.settings_preview)) }
+            item { HelpText(stringResource(R.string.settings_preview_help)) }
+            item { ListRow(stringResource(R.string.phone_title)) { onOpenPreview("phone") } }
+            item { ListRow(stringResource(R.string.bt_music_title)) { onOpenPreview("music") } }
+            item { ListRow(stringResource(R.string.radio_title)) { onOpenPreview("radio") } }
 
             item { SectionHeader(stringResource(R.string.settings_system)) }
             item { ListRow(stringResource(R.string.system_tools_title), onClick = onOpenSystemTools) }

@@ -135,4 +135,21 @@
     <string name="compass_full_sw">Güneybatı</string>
     <string name="compass_full_w">Batı</string>
     <string name="compass_full_nw">Kuzeybatı</string>
+    <string name="settings_preview">Yeni Ekranlar (Deneme)</string>
+    <string name="settings_preview_help">Kokpit\'in kendi Telefon, Bluetooth Müzik ve Radyo ekranları. Radyo ve Bluetooth kontrolleri bağlanana kadar alttaki düğmeler cihazın kendi ekranlarını açar.</string>
+    <string name="phone_title">Telefon</string>
+    <string name="phone_recent">Son Aramalar</string>
+    <string name="phone_contacts">Rehber</string>
+    <string name="phone_favourites">Favoriler</string>
+    <string name="phone_call">Ara</string>
+    <string name="phone_delete">Sil</string>
+    <string name="phone_no_calls">Henüz arama yok. Cihaz aramaları kaydettiğinde burada görünür.</string>
+    <string name="phone_no_contacts">Rehber boş. Telefon rehberini cihazın Bluetooth ayarlarından eşitleyin.</string>
+    <string name="phone_no_favourites">Favori kişi yok.</string>
+    <string name="bt_music_title">Bluetooth Müzik</string>
+    <string name="radio_title">Radyo</string>
+    <string name="radio_preview_notice">Deneme: frekans ayarı henüz radyoya bağlı değil. Cihazın kendi radyosunu açmak için dokunun.</string>
+    <string name="radio_down">Frekansı düşür</string>
+    <string name="radio_up">Frekansı artır</string>
+    <string name="radio_save">Kaydet</string>
 </resources>
