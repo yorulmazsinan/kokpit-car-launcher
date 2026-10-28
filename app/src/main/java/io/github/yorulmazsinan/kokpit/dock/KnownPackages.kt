@@ -6,7 +6,17 @@ package io.github.yorulmazsinan.kokpit.dock
  */
 object KnownPackages {
     val candidates: Map<DockSlot, List<String>> = mapOf(
-        DockSlot.CARPLAY to listOf("com.ts.carplayapp", "com.autochips.carplay", "com.zjinnova.zlink", "net.easyconn"),
+        // FF/TS head units (MT8227L): screens are only tagged for the vendor launcher,
+        // so they are listed as components. PhoneLink is Apple CarPlay; EasyConnection is
+        // Android Auto/mirroring and only a fallback.
+        DockSlot.CARPLAY to listOf(
+            "com.ts.carplayapp/com.autochips.carplayapp.LoadingActivity",
+            "com.zjinnova.zlink",
+            "net.easyconn",
+        ),
+        DockSlot.RADIO to listOf("com.ts.MainUI/com.ts.main.radio.RadioMainActivity"),
+        DockSlot.BLUETOOTH to listOf("com.ts.MainUI/com.ts.bt.BtMusicActivity"),
+        DockSlot.PHONE to listOf("com.ts.MainUI/com.ts.bt.BtConnectActivity"),
         DockSlot.MAPS to listOf(
             "com.google.android.apps.maps",
             "ru.yandex.yandexnavi",

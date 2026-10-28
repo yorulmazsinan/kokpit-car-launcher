@@ -42,8 +42,19 @@ class DockResolverTest {
     }
 
     @Test
-    fun headUnitCarPlayAppsAreKnown() {
-        assertEquals("com.ts.carplayapp", resolveDockTarget(DockSlot.CARPLAY, setOf("com.autochips.carplay", "com.ts.carplayapp"), override = null))
+    fun headUnitCarPlayOpensPhoneLinkNotEasyConnection() {
+        assertEquals(
+            "com.ts.carplayapp/com.autochips.carplayapp.LoadingActivity",
+            resolveDockTarget(DockSlot.CARPLAY, setOf("net.easyconn", "com.ts.carplayapp"), override = null),
+        )
+    }
+
+    @Test
+    fun headUnitVendorScreensAreDefaults() {
+        val installed = setOf("com.ts.MainUI")
+        assertEquals("com.ts.MainUI/com.ts.main.radio.RadioMainActivity", resolveDockTarget(DockSlot.RADIO, installed, null))
+        assertEquals("com.ts.MainUI/com.ts.bt.BtMusicActivity", resolveDockTarget(DockSlot.BLUETOOTH, installed, null))
+        assertEquals("com.ts.MainUI/com.ts.bt.BtConnectActivity", resolveDockTarget(DockSlot.PHONE, installed, null))
     }
 
     @Test

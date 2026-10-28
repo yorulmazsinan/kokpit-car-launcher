@@ -24,5 +24,5 @@ fun parseDockTarget(value: String): DockTarget {
 fun resolveDockTarget(slot: DockSlot, installed: Set<String>, override: String?): String? {
     if (slot == DockSlot.APPS) return null
     if (override != null && parseDockTarget(override).packageName in installed) return override
-    return KnownPackages.candidates[slot].orEmpty().firstOrNull { it in installed }
+    return KnownPackages.candidates[slot].orEmpty().firstOrNull { parseDockTarget(it).packageName in installed }
 }

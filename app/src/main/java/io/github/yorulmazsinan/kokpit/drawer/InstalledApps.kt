@@ -25,11 +25,9 @@ class InstalledApps(private val pm: PackageManager, private val ownPackage: Stri
             .sortedWith { a, b -> collator.compare(a.label, b.label) }
     }
 
-    /** Package names only: no labels or sorting, cheap enough for every return to Home. */
+    /** All installed package names (vendor screens live in apps without a launcher icon); cheap, no labels. */
     fun packages(): Set<String> =
-        pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
-            .mapTo(mutableSetOf()) { it.activityInfo.packageName }
-            .apply { remove(ownPackage) }
+        pm.getInstalledApplications(0).mapTo(mutableSetOf()) { it.packageName }.apply { remove(ownPackage) }
 
     /** Launch intent for a stored dock target (`package` or `package/class`). */
     fun launchIntent(target: String): Intent? = when (val t = parseDockTarget(target)) {
