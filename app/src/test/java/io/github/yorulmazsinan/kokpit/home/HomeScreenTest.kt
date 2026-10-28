@@ -1,6 +1,7 @@
 package io.github.yorulmazsinan.kokpit.home
 
 import android.content.Context
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -115,10 +116,17 @@ class HomeScreenTest {
     }
 
     @Test
-    fun driveCardShowsSpeedWithoutAverage() {
+    fun speedCardShowsSmallAverageAboveGauge() {
         show(base)
         compose.onNodeWithTag("speed_value").assertExists()
-        compose.onNodeWithText("48", substring = true).assertDoesNotExist()
+        compose.onNodeWithTag("average_speed").assertExists()
+        compose.onNodeWithText(context.getString(R.string.average_speed_short, 48)).assertExists()
+    }
+
+    @Test
+    fun noAverageBeforeItIsKnown() {
+        show(base.copy(trip = base.trip.copy(averageKmh = null)))
+        compose.onNodeWithTag("average_speed").assertDoesNotExist()
     }
 
     @Test
@@ -146,5 +154,13 @@ class HomeScreenTest {
     fun musicCardSeparatesInfoFromControls() {
         show(base.copy(media = NowPlayingState.Playing(io.github.yorulmazsinan.kokpit.media.NowPlaying("Şarkı", "Sanatçı", "Spotify", null, true))))
         compose.onNodeWithTag("music_divider").assertExists()
+    }
+
+    @Test
+    fun carPlayButtonUsesTheInstalledAppIcon() {
+        val icon = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888).asImageBitmap()
+        compose.setContent { KokpitTheme { HomeScreen(base.copy(dockIcons = mapOf(DockSlot.CARPLAY to icon)), now, HomeActions()) } }
+        compose.onNodeWithTag("dock_icon_app_CARPLAY", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("dock_icon_app_RADIO", useUnmergedTree = true).assertDoesNotExist()
     }
 }

@@ -1,6 +1,9 @@
 package io.github.yorulmazsinan.kokpit.home
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
+import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import androidx.lifecycle.viewModelScope
 import io.github.yorulmazsinan.kokpit.AppContainer
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
@@ -15,7 +18,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel(container: AppContainer) : ViewModel() {
+class HomeViewModel(private val container: AppContainer) : ViewModel() {
+    private val iconCache = mutableMapOf<String, ImageBitmap?>()
+
+    private fun icons(dock: Map<DockSlot, String?>): Map<DockSlot, ImageBitmap> =
+        listOf(DockSlot.CARPLAY).mapNotNull { slot ->
+            val target = dock[slot] ?: return@mapNotNull null
+            iconCache.getOrPut(target) { container.installedApps.icon(target)?.asImageBitmap() }?.let { slot to it }
+        }.toMap()
+
     private data class Live(
         val weather: WeatherState,
         val calendar: CalendarState,
@@ -52,6 +63,7 @@ class HomeViewModel(container: AppContainer) : ViewModel() {
             dark = resolveDark(mode, now, weather?.sunriseLocal, weather?.sunsetLocal),
             accent = accent,
             recentCalls = calls,
+            dockIcons = icons(dock),
         )
     }.stateIn(
         viewModelScope,

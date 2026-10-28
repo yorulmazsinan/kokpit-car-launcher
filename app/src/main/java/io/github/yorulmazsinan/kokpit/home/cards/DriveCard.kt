@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -52,7 +53,17 @@ fun SpeedCard(trip: TripSnapshot, permissionMissing: Boolean, onRequestPermissio
             }
             return@KokpitCard
         }
-        SpeedGauge(if (trip.hasFix) trip.speedKmh else null, Modifier.fillMaxSize())
+        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            trip.averageKmh?.let { avg ->
+                Text(
+                    stringResource(R.string.average_speed_short, avg),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag("average_speed"),
+                )
+            }
+            SpeedGauge(if (trip.hasFix) trip.speedKmh else null, Modifier.fillMaxWidth().weight(1f))
+        }
     }
 }
 

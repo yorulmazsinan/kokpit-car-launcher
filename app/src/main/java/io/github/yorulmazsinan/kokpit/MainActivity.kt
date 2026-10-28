@@ -31,6 +31,7 @@ import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
 import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
 import io.github.yorulmazsinan.kokpit.system.SystemToolsScreen
+import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
 import kotlinx.coroutines.launch
 
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
             val home: HomeViewModel = viewModel { HomeViewModel(container) }
             val state by home.state.collectAsStateWithLifecycle()
             KokpitTheme(dark = state.dark, accent = state.accent) {
-                KokpitNavHost(container, state)
+                DesignScale { KokpitNavHost(container, state) }
             }
         }
     }

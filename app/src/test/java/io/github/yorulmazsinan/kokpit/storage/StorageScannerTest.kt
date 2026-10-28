@@ -56,4 +56,23 @@ class StorageScannerTest {
         assertEquals(listOf(File(ok, "kokpit-diagnostics.txt")), written)
         assertTrue(File(ok, "kokpit-diagnostics.txt").readText() == "hello")
     }
+
+    @Test
+    fun exportDirsPreferUsbRootThenAppFolderThenInternal() {
+        val usb = tmp.newFolder("usb")
+        val usbApp = tmp.newFolder("usb-app")
+        val internal = tmp.newFolder("sdcard")
+        val dirs = exportDirs(roots = listOf(usb, usb), appDirs = listOf(usbApp), internal = internal)
+        assertEquals(listOf(File(usb, "Kokpit"), usbApp, File(internal, "Kokpit")), dirs)
+    }
+
+    @Test
+    fun writeFirstStopsAtTheFirstWritableDir() {
+        val notADir = touch(tmp.root, "blocked")
+        val ok = tmp.newFolder("ok")
+        val other = tmp.newFolder("other")
+        val written = writeFirst(listOf(File(notADir, "x"), ok, other), "a.txt", "hi")
+        assertEquals(File(ok, "a.txt"), written)
+        assertTrue(!File(other, "a.txt").exists())
+    }
 }

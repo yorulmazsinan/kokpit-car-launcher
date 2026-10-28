@@ -14,6 +14,7 @@ import io.github.yorulmazsinan.kokpit.drive.CompassPoint
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
 import io.github.yorulmazsinan.kokpit.media.NowPlaying
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
+import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
 import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import io.github.yorulmazsinan.kokpit.weather.Weather
@@ -57,7 +58,7 @@ class HomeScreenshotTest {
     )
 
     private fun capture(name: String, dark: Boolean = true, accent: ThemeAccent = ThemeAccent.GAUGE_GREEN) {
-        compose.setContent { KokpitTheme(dark = dark, accent = accent) { HomeScreen(state(dark), now, HomeActions()) } }
+        compose.setContent { KokpitTheme(dark = dark, accent = accent) { DesignScale { HomeScreen(state(dark), now, HomeActions()) } } }
         val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
         val out = File("build/screenshots/$name.png").apply { parentFile?.mkdirs() }
         out.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -84,4 +85,10 @@ class HomeScreenshotTest {
 
     @Test @Config(qualifiers = "tr-w1024dp-h600dp-land-mdpi")
     fun accentNightBlue() = capture("accent-night_blue", accent = ThemeAccent.NIGHT_BLUE)
+
+    @Test @Config(qualifiers = "tr-w683dp-h360dp-land-hdpi")
+    fun home683x360() = capture("home-683x360")
+
+    @Test @Config(qualifiers = "tr-w768dp-h410dp-land-tvdpi")
+    fun home768x410() = capture("home-768x410")
 }

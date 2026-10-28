@@ -11,19 +11,19 @@ fun vendorPackagesToExport(all: List<String>): List<String> =
 
 fun exportFileName(packageName: String): String = "$packageName.apk"
 
-/** Copies vendor APKs into `<dir>/vendor/`; returns how many were copied. */
-fun exportVendorApks(context: Context, dirs: List<File>): Int {
+/** Copies vendor APKs into `<dir>/vendor/` of the first writable dir; returns the folder used and the count. */
+fun exportVendorApks(context: Context, dirs: List<File>): Pair<File, Int>? {
     val pm = context.packageManager
     val packages = vendorPackagesToExport(pm.getInstalledApplications(0).map { it.packageName })
-    var copied = 0
-    dirs.forEach { dir ->
-        val target = File(dir, "vendor").apply { mkdirs() }
-        packages.forEach { pkg ->
+    for (dir in dirs) {
+        val target = File(dir, "vendor")
+        val copied = packages.count { pkg ->
             runCatching {
+                target.mkdirs()
                 File(pm.getApplicationInfo(pkg, 0).sourceDir).copyTo(File(target, exportFileName(pkg)), overwrite = true)
-                copied++
-            }
+            }.isSuccess
         }
+        if (copied > 0) return target to copied
     }
-    return copied
+    return null
 }

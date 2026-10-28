@@ -53,3 +53,20 @@ fun removableAppDirs(context: Context): List<File> {
     val internal = context.getExternalFilesDir(null)
     return context.getExternalFilesDirs(null).filterNotNull().filter { it != internal }
 }
+
+/** Where Kokpit writes files for the user: USB roots first, then USB app folders, then internal storage. */
+fun exportDirs(roots: List<File>, appDirs: List<File>, internal: File?): List<File> =
+    (roots.map { File(it, "Kokpit") } + appDirs + listOfNotNull(internal?.let { File(it, "Kokpit") }))
+        .distinctBy { it.absolutePath }
+
+/** Writes into the first directory that accepts the file; returns it, or null if none did. */
+fun writeFirst(dirs: List<File>, name: String, text: String): File? =
+    dirs.firstNotNullOfOrNull { dir ->
+        runCatching {
+            dir.mkdirs()
+            File(dir, name).apply { writeText(text) }.takeIf { it.length() > 0 || text.isEmpty() }
+        }.getOrNull()
+    }
+
+fun exportDirs(context: Context): List<File> =
+    exportDirs(removableRoots(context), removableAppDirs(context), android.os.Environment.getExternalStorageDirectory())

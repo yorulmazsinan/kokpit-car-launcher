@@ -2,6 +2,9 @@ package io.github.yorulmazsinan.kokpit.home.cards
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,17 +38,17 @@ import androidx.compose.ui.unit.dp
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 
 @Composable
-fun Dock(onClick: (DockSlot) -> Unit, onLongClick: (DockSlot) -> Unit, modifier: Modifier = Modifier) {
+fun Dock(onClick: (DockSlot) -> Unit, onLongClick: (DockSlot) -> Unit, modifier: Modifier = Modifier, appIcons: Map<DockSlot, ImageBitmap> = emptyMap()) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         DockSlot.entries.filter { it.inDock }.forEach { slot ->
-            DockButton(slot, { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
+            DockButton(slot, appIcons[slot], { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DockButton(slot: DockSlot, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
+private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
     val highlighted = slot == DockSlot.CARPLAY
     Surface(
         modifier
@@ -61,12 +64,16 @@ private fun DockButton(slot: DockSlot, onClick: () -> Unit, onLongClick: () -> U
                 .padding(vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
-                slot.icon(),
-                null,
-                tint = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(30.dp),
-            )
+            if (appIcon != null) {
+                Image(appIcon, null, Modifier.size(30.dp).clip(RoundedCornerShape(7.dp)).testTag("dock_icon_app_${slot.name}"))
+            } else {
+                Icon(
+                    slot.icon(),
+                    null,
+                    tint = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(30.dp),
+                )
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(slot.label),

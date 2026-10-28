@@ -95,6 +95,11 @@ class NowPlayingRepository(private val context: Context) {
     }
 
     private fun publish() {
+        // Callbacks arrive from other apps' sessions; one bad session must not take Kokpit down.
+        runCatching { publishUnsafe() }.onFailure { _state.value = NowPlayingState.Idle }
+    }
+
+    private fun publishUnsafe() {
         val snapshots = controllers.map { it to it.snapshot() }
         val chosen = selectSession(snapshots.map { it.second })
         current = snapshots.firstOrNull { it.second == chosen }?.first
@@ -108,8 +113,12 @@ class NowPlayingRepository(private val context: Context) {
                     title = chosen.title.orEmpty(),
                     artist = chosen.artist,
                     sourceLabel = appLabel(chosen.packageName),
-                    art = metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-                        ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART),
+                    art = safeAlbumArt(
+                        runCatching {
+                            metadata?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+                                ?: metadata?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+                        }.getOrNull(),
+                    ),
                     isPlaying = chosen.isPlaying,
                     durationMs = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L,
                     positionMs = controller.playbackState?.position ?: 0L,

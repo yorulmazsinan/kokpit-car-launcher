@@ -29,15 +29,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import io.github.yorulmazsinan.kokpit.R
-import io.github.yorulmazsinan.kokpit.storage.removableAppDirs
-import io.github.yorulmazsinan.kokpit.storage.writeToDirs
+import io.github.yorulmazsinan.kokpit.storage.exportDirs
+import io.github.yorulmazsinan.kokpit.storage.writeFirst
+import android.Manifest
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 
 @Composable
 fun DiagnosticsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val text = remember { DiagnosticsCollector(context).collect().toText() }
+    val text = remember {
+        DiagnosticsCollector(context).collect().toText() +
+            (readCrashLog(context)?.let { "\n[last crashes]\n$it" } ?: "")
+    }
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) {
             val ok = runCatching {
@@ -46,34 +53,38 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             Toast.makeText(context, if (ok) R.string.diagnostics_saved else R.string.diagnostics_save_failed, Toast.LENGTH_SHORT).show()
         }
     }
+    val scope = rememberCoroutineScope()
+    var lastResult by remember { mutableStateOf<String?>(null) }
+    fun show(message: String) {
+        lastResult = message
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+    val writePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        scope.launch {
+            val file = withContext(Dispatchers.IO) { writeFirst(exportDirs(context), "kokpit-diagnostics.txt", text) }
+            show(file?.let { context.getString(R.string.saved_to, it.absolutePath) } ?: context.getString(R.string.diagnostics_save_failed))
+        }
+    }
+    val vendorPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        scope.launch {
+            val result = withContext(Dispatchers.IO) { exportVendorApks(context, exportDirs(context)) }
+            show(result?.let { (dir, n) -> context.getString(R.string.vendor_export_done, n, dir.absolutePath) } ?: context.getString(R.string.vendor_export_failed))
+        }
+    }
     ScreenScaffold(stringResource(R.string.diagnostics_title), onBack) {
+        lastResult?.let {
+            Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
+        }
         Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = { copyToClipboard(context, text) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_copy))
             }
-            OutlinedButton(onClick = {
-                val written = writeToDirs(removableAppDirs(context), "kokpit-diagnostics.txt", text)
-                if (written.isNotEmpty()) {
-                    Toast.makeText(context, R.string.diagnostics_saved_usb, Toast.LENGTH_LONG).show()
-                } else {
-                    runCatching { saveLauncher.launch("kokpit-diagnostics.txt") }
-                        .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
-                }
-            }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
+            OutlinedButton(onClick = { writePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_save))
             }
         }
-        val scope = rememberCoroutineScope()
         OutlinedButton(
-            onClick = {
-                scope.launch {
-                    val dirs = removableAppDirs(context)
-                    val count = withContext(Dispatchers.IO) { exportVendorApks(context, dirs) }
-                    val message = if (dirs.isEmpty() || count == 0) context.getString(R.string.vendor_export_failed)
-                    else context.getString(R.string.vendor_export_done, count)
-                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                }
-            },
+            onClick = { vendorPermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
         ) { Text(stringResource(R.string.vendor_export)) }
         SelectionContainer {

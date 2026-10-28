@@ -37,6 +37,21 @@ class InstalledApps(private val pm: PackageManager, private val ownPackage: Stri
         is DockTarget.Component -> launcherIntent(ComponentName(t.packageName, t.className))
     }
 
+    /** The target app's launcher icon, small enough for a dock button. */
+    fun icon(target: String): android.graphics.Bitmap? = runCatching {
+        val drawable = when (val t = parseDockTarget(target)) {
+            is DockTarget.Package -> pm.getApplicationIcon(t.packageName)
+            is DockTarget.Component -> pm.getActivityIcon(ComponentName(t.packageName, t.className))
+        }
+        androidx.core.graphics.drawable.DrawableCompat.wrap(drawable).let { d ->
+            val bitmap = android.graphics.Bitmap.createBitmap(96, 96, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            d.setBounds(0, 0, 96, 96)
+            d.draw(canvas)
+            bitmap
+        }
+    }.getOrNull()
+
     /** Human label for a stored dock target: the screen's own label, or the app's. */
     fun label(target: String): String = runCatching {
         when (val t = parseDockTarget(target)) {

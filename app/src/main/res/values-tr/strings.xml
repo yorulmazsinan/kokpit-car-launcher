@@ -119,7 +119,7 @@
     <string name="cancel">İptal</string>
     <string name="diagnostics_saved_usb">USB belleğe kaydedildi: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
     <string name="vendor_export">Üretici Uygulamalarını USB\'ye Kopyala</string>
-    <string name="vendor_export_done">%1$d üretici uygulaması USB\'ye kopyalandı (Android › data › io.github.yorulmazsinan.kokpit › files › vendor)</string>
+    <string name="vendor_export_done">%1$d üretici uygulaması kopyalandı: %2$s</string>
     <string name="vendor_export_failed">Üretici uygulamaları kopyalanamadı. USB belleği takıp tekrar deneyin.</string>
     <string name="accent_gauge_green">Gösterge Yeşili</string>
     <string name="accent_chrome">Beyaz ve Krom</string>
@@ -152,4 +152,6 @@
     <string name="radio_down">Frekansı düşür</string>
     <string name="radio_up">Frekansı artır</string>
     <string name="radio_save">Kaydet</string>
+    <string name="average_speed_short">Ort. %1$d km/s</string>
+    <string name="saved_to">Kaydedildi: %1$s</string>
 </resources>

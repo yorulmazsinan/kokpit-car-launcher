@@ -13,6 +13,7 @@ import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.Contact
 import io.github.yorulmazsinan.kokpit.phone.PhoneContent
 import io.github.yorulmazsinan.kokpit.radio.RadioScreen
+import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
 import java.io.File
 import org.junit.Rule
@@ -24,7 +25,7 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(qualifiers = "tr-w1024dp-h600dp-land-mdpi")
+@Config(qualifiers = "tr-w683dp-h360dp-land-hdpi")
 class ScreensScreenshotTest {
     @get:Rule val compose = createComposeRule()
 
@@ -41,20 +42,20 @@ class ScreensScreenshotTest {
             CallEntry(null, "0532 111 22 33", CallType.INCOMING, 1_797_800_000_000L),
             CallEntry("Annem", "0533", CallType.INCOMING, 1_797_700_000_000L),
         )
-        compose.setContent { KokpitTheme { PhoneContent(calls, listOf(Contact("Annem", "0533", true)), onBack = {}, onDial = {}) } }
+        compose.setContent { KokpitTheme { DesignScale { PhoneContent(calls, listOf(Contact("Annem", "0533", true)), onBack = {}, onDial = {}) } } }
         save("screen-phone")
     }
 
     @Test
     fun music() {
         val np = NowPlaying("Gesi Bağları", "Barış Manço", "Bluetooth", null, isPlaying = true, durationMs = 221_000, positionMs = 84_000)
-        compose.setContent { KokpitTheme { BtMusicScreen(NowPlayingState.Playing(np), {}, {}, {}, {}, {}) } }
+        compose.setContent { KokpitTheme { DesignScale { BtMusicScreen(NowPlayingState.Playing(np), {}, {}, {}, {}, {}) } } }
         save("screen-music")
     }
 
     @Test
     fun radio() {
-        compose.setContent { KokpitTheme { RadioScreen(984, listOf(984, 914, 953, 974, 1040), {}, {}, {}, {}) } }
+        compose.setContent { KokpitTheme { DesignScale { RadioScreen(984, listOf(984, 914, 953, 974, 1040), {}, {}, {}, {}) } } }
         save("screen-radio")
     }
 }

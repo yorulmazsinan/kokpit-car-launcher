@@ -119,7 +119,7 @@
     <string name="cancel">Cancel</string>
     <string name="diagnostics_saved_usb">Saved to the USB stick: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
     <string name="vendor_export">Copy Vendor Apps to USB</string>
-    <string name="vendor_export_done">%1$d vendor apps copied to the USB stick (Android › data › io.github.yorulmazsinan.kokpit › files › vendor)</string>
+    <string name="vendor_export_done">%1$d vendor apps copied to %2$s</string>
     <string name="vendor_export_failed">Couldn\'t copy vendor apps. Plug in a USB stick and try again.</string>
     <string name="accent_gauge_green">Gauge Green</string>
     <string name="accent_chrome">White and Chrome</string>
@@ -152,4 +152,6 @@
     <string name="radio_down">Tune down</string>
     <string name="radio_up">Tune up</string>
     <string name="radio_save">Save</string>
+    <string name="average_speed_short">Avg %1$d km/h</string>
+    <string name="saved_to">Saved: %1$s</string>
 </resources>
