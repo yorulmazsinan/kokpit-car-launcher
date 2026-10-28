@@ -40,7 +40,7 @@ class HomeViewModel(container: AppContainer) : ViewModel() {
         ::Live,
     )
 
-    val state: StateFlow<HomeUiState> = combine(live, container.dock.targets, container.themeMode, clock) { l, dock, mode, now ->
+    val state: StateFlow<HomeUiState> = combine(live, container.dock.targets, combine(container.themeMode, container.accent, ::Pair), container.calls.calls, clock) { l, dock, (mode, accent), calls, now ->
         val weather = (l.weather as? WeatherState.Fresh)?.weather ?: (l.weather as? WeatherState.Stale)?.weather
         HomeUiState(
             weather = l.weather,
@@ -50,6 +50,8 @@ class HomeViewModel(container: AppContainer) : ViewModel() {
             locationPermissionMissing = l.locationMissing,
             dock = dock,
             dark = resolveDark(mode, now, weather?.sunriseLocal, weather?.sunsetLocal),
+            accent = accent,
+            recentCalls = calls,
         )
     }.stateIn(
         viewModelScope,

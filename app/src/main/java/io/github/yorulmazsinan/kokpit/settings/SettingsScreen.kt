@@ -40,6 +40,7 @@ import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.components.SectionHeader
 import io.github.yorulmazsinan.kokpit.ui.components.ToggleRow
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import kotlinx.coroutines.launch
 
 private const val DAVX5 = "at.bitfire.davdroid"
@@ -79,6 +80,19 @@ fun SettingsScreen(
                 }
             }
             item { HelpText(stringResource(R.string.theme_auto_help)) }
+            item {
+                val accents = ThemeAccent.entries
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+                    accents.forEachIndexed { i, accent ->
+                        SegmentedButton(
+                            selected = settings.accent == accent,
+                            onClick = { update { it.copy(accent = accent) } },
+                            shape = SegmentedButtonDefaults.itemShape(i, accents.size),
+                            modifier = Modifier.heightIn(min = Dimens.MinTouch),
+                        ) { Text(stringResource(accent.label)) }
+                    }
+                }
+            }
 
             item { SectionHeader(stringResource(R.string.settings_dock)) }
             DockSlot.entries.filter { it != DockSlot.APPS }.forEach { slot ->

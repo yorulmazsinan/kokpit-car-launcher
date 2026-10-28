@@ -7,12 +7,15 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
 import io.github.yorulmazsinan.kokpit.calendar.UpcomingEvent
+import io.github.yorulmazsinan.kokpit.calls.CallEntry
+import io.github.yorulmazsinan.kokpit.calls.CallType
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drive.CompassPoint
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
 import io.github.yorulmazsinan.kokpit.media.NowPlaying
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import io.github.yorulmazsinan.kokpit.weather.Weather
 import io.github.yorulmazsinan.kokpit.weather.WeatherState
 import java.io.File
@@ -46,10 +49,15 @@ class HomeScreenshotTest {
         locationPermissionMissing = false,
         dock = DockSlot.entries.associateWith { null },
         dark = dark,
+        recentCalls = listOf(
+            CallEntry("Ece", "0555", CallType.MISSED, 3L),
+            CallEntry("Ofis", "0212", CallType.OUTGOING, 2L),
+            CallEntry(null, "0532 111 22 33", CallType.INCOMING, 1L),
+        ),
     )
 
-    private fun capture(name: String, dark: Boolean = true) {
-        compose.setContent { KokpitTheme(dark = dark) { HomeScreen(state(dark), now, HomeActions()) } }
+    private fun capture(name: String, dark: Boolean = true, accent: ThemeAccent = ThemeAccent.GAUGE_GREEN) {
+        compose.setContent { KokpitTheme(dark = dark, accent = accent) { HomeScreen(state(dark), now, HomeActions()) } }
         val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
         val out = File("build/screenshots/$name.png").apply { parentFile?.mkdirs() }
         out.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
@@ -67,4 +75,13 @@ class HomeScreenshotTest {
 
     @Test @Config(qualifiers = "tr-w1280dp-h720dp-land-mdpi")
     fun home1280x720() = capture("home-1280x720")
+
+    @Test @Config(qualifiers = "tr-w1024dp-h600dp-land-mdpi")
+    fun accentGaugeGreen() = capture("accent-gauge_green", accent = ThemeAccent.GAUGE_GREEN)
+
+    @Test @Config(qualifiers = "tr-w1024dp-h600dp-land-mdpi")
+    fun accentChrome() = capture("accent-chrome", accent = ThemeAccent.CHROME)
+
+    @Test @Config(qualifiers = "tr-w1024dp-h600dp-land-mdpi")
+    fun accentNightBlue() = capture("accent-night_blue", accent = ThemeAccent.NIGHT_BLUE)
 }

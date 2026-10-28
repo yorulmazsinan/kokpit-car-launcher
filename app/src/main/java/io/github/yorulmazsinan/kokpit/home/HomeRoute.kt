@@ -24,6 +24,7 @@ private val RUNTIME_PERMISSIONS = arrayOf(
     Manifest.permission.ACCESS_FINE_LOCATION,
     Manifest.permission.ACCESS_COARSE_LOCATION,
     Manifest.permission.READ_CALENDAR,
+    Manifest.permission.READ_CALL_LOG,
 )
 
 @Composable
@@ -43,6 +44,7 @@ fun HomeRoute(
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         container.drive.refreshPermission()
+        container.calls.refresh()
         container.scope.launch {
             container.calendar.refresh()
             container.weather.refresh()

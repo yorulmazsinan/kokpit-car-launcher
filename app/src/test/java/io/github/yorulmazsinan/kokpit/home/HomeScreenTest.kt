@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
+import io.github.yorulmazsinan.kokpit.calls.CallEntry
+import io.github.yorulmazsinan.kokpit.calls.CallType
 import io.github.yorulmazsinan.kokpit.calendar.UpcomingEvent
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
@@ -109,5 +111,25 @@ class HomeScreenTest {
         compose.setContent { KokpitTheme { HomeScreen(base, now, HomeActions(onOpenSettings = { opened = true })) } }
         compose.onNodeWithTag("home_settings").assertExists().assertHeightIsAtLeast(64.dp).performClick()
         assertTrue(opened)
+    }
+
+    @Test
+    fun driveCardShowsSpeedWithoutAverage() {
+        show(base)
+        compose.onNodeWithTag("speed_value").assertExists()
+        compose.onNodeWithText("48", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun showsRecentCallsWhenAvailable() {
+        show(base.copy(recentCalls = listOf(CallEntry("Ece", "0555", CallType.MISSED, 0L))))
+        compose.onNodeWithTag("recent_calls").assertExists()
+        compose.onNodeWithText("Ece", substring = true).assertExists()
+    }
+
+    @Test
+    fun hidesRecentCallsWhenNone() {
+        show(base)
+        compose.onNodeWithTag("recent_calls").assertDoesNotExist()
     }
 }

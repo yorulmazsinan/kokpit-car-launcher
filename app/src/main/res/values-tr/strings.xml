@@ -64,8 +64,6 @@
     <string name="media_previous">Önceki</string>
     <string name="media_play_pause">Oynat veya duraklat</string>
     <string name="media_next">Sonraki</string>
-    <string name="speed_unit_gps">km/s · GPS</string>
-    <string name="average_speed">Ortalama %1$d km/s</string>
     <string name="assistant_not_set">Asistan yakında geliyor. Bu düğmeye bir uygulama atamak için Uygulamalar\'a uzun basıp Ayarlar\'a girin.</string>
     <string name="settings_title">Ayarlar</string>
     <string name="settings_appearance">Görünüm</string>
@@ -123,4 +121,10 @@
     <string name="vendor_export">Üretici Uygulamalarını USB\'ye Kopyala</string>
     <string name="vendor_export_done">%1$d üretici uygulaması USB\'ye kopyalandı (Android › data › io.github.yorulmazsinan.kokpit › files › vendor)</string>
     <string name="vendor_export_failed">Üretici uygulamaları kopyalanamadı. USB belleği takıp tekrar deneyin.</string>
+    <string name="accent_gauge_green">Gösterge Yeşili</string>
+    <string name="accent_chrome">Beyaz ve Krom</string>
+    <string name="accent_night_blue">Gece Mavisi</string>
+    <string name="accent_teal">Turkuaz</string>
+    <string name="speed_unit">km/s</string>
+    <string name="recent_calls">Son Aramalar</string>
 </resources>

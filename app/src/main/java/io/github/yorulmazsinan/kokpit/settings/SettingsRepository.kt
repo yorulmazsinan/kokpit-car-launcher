@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.intro.IntroMode
 import io.github.yorulmazsinan.kokpit.intro.IntroSettings
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 
 data class KokpitSettings(
     val themeMode: ThemeMode = ThemeMode.DARK,
+    val accent: ThemeAccent = ThemeAccent.GAUGE_GREEN,
     val hotspotSsid: String? = null,
     val hotspotPassword: String? = null,
     val hotspotPasswordUnreadable: Boolean = false,
@@ -43,6 +45,7 @@ class SettingsRepository(
 
     private fun read(p: Preferences) = KokpitSettings(
         themeMode = p[THEME]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.DARK,
+        accent = p[ACCENT]?.let { runCatching { ThemeAccent.valueOf(it) }.getOrNull() } ?: ThemeAccent.GAUGE_GREEN,
         hotspotSsid = p[SSID],
         hotspotPassword = p[PASSWORD]?.let(secrets::decrypt),
         hotspotPasswordUnreadable = p[PASSWORD] != null && p[PASSWORD]?.let(secrets::decrypt) == null,
@@ -59,6 +62,7 @@ class SettingsRepository(
 
     private fun write(p: MutablePreferences, s: KokpitSettings) {
         p[THEME] = s.themeMode.name
+        p[ACCENT] = s.accent.name
         p.setOrRemove(SSID, s.hotspotSsid)
         when {
             s.hotspotPassword != null -> runCatching { secrets.encrypt(s.hotspotPassword) }
@@ -81,6 +85,7 @@ class SettingsRepository(
 
     private companion object {
         val THEME = stringPreferencesKey("theme_mode")
+        val ACCENT = stringPreferencesKey("theme_accent")
         val SSID = stringPreferencesKey("hotspot_ssid")
         val PASSWORD = stringPreferencesKey("hotspot_password_sealed")
         val AUTO_WIFI = booleanPreferencesKey("auto_wifi")

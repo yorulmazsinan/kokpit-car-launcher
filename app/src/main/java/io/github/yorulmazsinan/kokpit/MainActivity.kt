@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val home: HomeViewModel = viewModel { HomeViewModel(container) }
             val state by home.state.collectAsStateWithLifecycle()
-            KokpitTheme(dark = state.dark) {
+            KokpitTheme(dark = state.dark, accent = state.accent) {
                 KokpitNavHost(container, state)
             }
         }

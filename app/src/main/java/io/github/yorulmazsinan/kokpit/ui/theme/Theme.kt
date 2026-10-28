@@ -5,19 +5,21 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val DarkScheme = darkColorScheme(
-    primary = KokpitColors.Accent,
-    onPrimary = KokpitColors.Background,
-    primaryContainer = KokpitColors.AccentContainer,
-    onPrimaryContainer = KokpitColors.OnAccentContainer,
-    background = KokpitColors.Background,
-    onBackground = KokpitColors.TextPrimary,
-    surface = KokpitColors.Card,
-    onSurface = KokpitColors.TextPrimary,
-    surfaceVariant = KokpitColors.Card,
-    onSurfaceVariant = KokpitColors.TextSecondary,
+private fun darkScheme(p: AccentPalette) = darkColorScheme(
+    primary = p.accent,
+    onPrimary = p.background,
+    primaryContainer = p.accentContainer,
+    onPrimaryContainer = p.onAccentContainer,
+    secondary = p.highlight,
+    tertiary = p.weatherIcon,
+    background = p.background,
+    onBackground = p.textPrimary,
+    surface = p.card,
+    onSurface = p.textPrimary,
+    surfaceVariant = p.card,
+    onSurfaceVariant = p.textSecondary,
     outline = KokpitColors.CardBorder,
-    tertiary = KokpitColors.Warm,
+    outlineVariant = p.cardBorder,
 )
 
 private val LightScheme = lightColorScheme(
@@ -31,13 +33,15 @@ private val LightScheme = lightColorScheme(
     onSurface = KokpitColors.LightTextPrimary,
     surfaceVariant = KokpitColors.LightCard,
     onSurfaceVariant = KokpitColors.LightTextSecondary,
+    secondary = KokpitColors.LightTextPrimary,
     tertiary = KokpitColors.LightAccent,
+    outlineVariant = KokpitColors.LightCard,
 )
 
 @Composable
-fun KokpitTheme(dark: Boolean = true, content: @Composable () -> Unit) {
+fun KokpitTheme(dark: Boolean = true, accent: ThemeAccent = ThemeAccent.GAUGE_GREEN, content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (dark) DarkScheme else LightScheme,
+        colorScheme = if (dark) darkScheme(accent.palette()) else LightScheme,
         typography = KokpitTypography,
         content = content,
     )

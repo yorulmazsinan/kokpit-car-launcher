@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.yorulmazsinan.kokpit.calendar.CalendarRepository
+import io.github.yorulmazsinan.kokpit.calls.CallLogRepository
 import io.github.yorulmazsinan.kokpit.connect.KokpitService
 import io.github.yorulmazsinan.kokpit.connect.UsbAttachActivity
 import io.github.yorulmazsinan.kokpit.connect.WifiAutoConnector
@@ -20,6 +21,7 @@ import io.github.yorulmazsinan.kokpit.intro.IntroVideoLibrary
 import io.github.yorulmazsinan.kokpit.media.NowPlayingRepository
 import io.github.yorulmazsinan.kokpit.settings.KeystoreSecretBox
 import io.github.yorulmazsinan.kokpit.settings.SettingsRepository
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import io.github.yorulmazsinan.kokpit.weather.OpenMeteoClient
 import io.github.yorulmazsinan.kokpit.weather.WeatherRepository
 import io.github.yorulmazsinan.kokpit.weather.WeatherState
@@ -49,10 +51,12 @@ class AppContainer(context: Context) {
     val weather = WeatherRepository(OpenMeteoClient(http), appContext.weatherStore, locationSource::lastKnown)
     val calendar = CalendarRepository(appContext, scope)
     val nowPlaying = NowPlayingRepository(appContext)
+    val calls = CallLogRepository(appContext, scope)
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
     val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)
     val themeMode: Flow<ThemeMode> = settings.settings.map { it.themeMode }
+    val accent: Flow<ThemeAccent> = settings.settings.map { it.accent }
     val introLibrary = IntroVideoLibrary(File(appContext.filesDir, "intro"))
     val wifi = WifiAutoConnector(appContext, settings)
 
@@ -75,6 +79,7 @@ class AppContainer(context: Context) {
         drive.start()
         weather.start(scope)
         calendar.start()
+        calls.refresh()
         nowPlaying.refreshAccess()
         val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
         connectivity.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {

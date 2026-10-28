@@ -39,8 +39,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
+import io.github.yorulmazsinan.kokpit.calls.CallEntry
+import io.github.yorulmazsinan.kokpit.calls.CallType
+import io.github.yorulmazsinan.kokpit.ui.theme.KokpitFonts
+import androidx.compose.material.icons.outlined.CallMade
+import androidx.compose.material.icons.outlined.CallMissed
+import androidx.compose.material.icons.outlined.CallReceived
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
-import io.github.yorulmazsinan.kokpit.ui.theme.KokpitType
 import io.github.yorulmazsinan.kokpit.weather.Weather
 import io.github.yorulmazsinan.kokpit.weather.WeatherCondition
 import io.github.yorulmazsinan.kokpit.weather.WeatherState
@@ -58,6 +68,8 @@ fun ClockCard(
     now: LocalDateTime,
     weather: WeatherState,
     calendar: CalendarState,
+    recentCalls: List<CallEntry>,
+    onOpenPhone: () -> Unit,
     onAssistant: () -> Unit,
     onOpenSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
@@ -67,7 +79,7 @@ fun ClockCard(
         Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
-                    Text(now.format(timeFormat), style = KokpitType.clock, color = MaterialTheme.colorScheme.onSurface)
+                    StyledClock(now)
                     Spacer(Modifier.height(6.dp))
                     Text(
                         now.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault()))
@@ -94,6 +106,7 @@ fun ClockCard(
                 }
             }
             WeatherRow(weather)
+            if (recentCalls.isNotEmpty()) RecentCallsRow(recentCalls, onOpenPhone)
             CalendarRow(calendar, now, onRequestPermissions)
         }
     }
@@ -181,4 +194,39 @@ fun WeatherCondition.icon(isDay: Boolean): ImageVector = when (this) {
     WeatherCondition.RAIN, WeatherCondition.SHOWERS -> Icons.Outlined.Umbrella
     WeatherCondition.SNOW -> Icons.Outlined.AcUnit
     WeatherCondition.THUNDER -> Icons.Outlined.Thunderstorm
+}
+
+@Composable
+private fun StyledClock(now: LocalDateTime) {
+    val hours = now.format(DateTimeFormatter.ofPattern("HH"))
+    val minutes = now.format(DateTimeFormatter.ofPattern("mm"))
+    val colors = MaterialTheme.colorScheme
+    Text(
+        buildAnnotatedString {
+            withStyle(SpanStyle(fontFamily = KokpitFonts.condensed, color = colors.secondary)) { append(hours) }
+            withStyle(SpanStyle(fontFamily = KokpitFonts.condensedLight, color = colors.onSurfaceVariant)) { append(":") }
+            withStyle(SpanStyle(fontFamily = KokpitFonts.condensedLight, color = colors.onSurface)) { append(minutes) }
+        },
+        style = TextStyle(fontSize = 92.sp, lineHeight = 92.sp),
+    )
+}
+
+@Composable
+private fun RecentCallsRow(calls: List<CallEntry>, onOpenPhone: () -> Unit) {
+    Column(Modifier.testTag("recent_calls").clickable(onClick = onOpenPhone)) {
+        Text(stringResource(R.string.recent_calls), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(4.dp))
+        calls.forEach { call ->
+            Row(Modifier.height(28.dp), verticalAlignment = Alignment.CenterVertically) {
+                val (icon, tint) = when (call.type) {
+                    CallType.MISSED -> Icons.Outlined.CallMissed to MaterialTheme.colorScheme.error
+                    CallType.OUTGOING -> Icons.Outlined.CallMade to MaterialTheme.colorScheme.onSurfaceVariant
+                    CallType.INCOMING -> Icons.Outlined.CallReceived to MaterialTheme.colorScheme.primary
+                }
+                Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(10.dp))
+                Text(call.displayName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
 }

@@ -1,9 +1,11 @@
 package io.github.yorulmazsinan.kokpit.home
 
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
+import io.github.yorulmazsinan.kokpit.calls.CallEntry
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import io.github.yorulmazsinan.kokpit.weather.WeatherState
 
 enum class ThemeMode { DARK, LIGHT, AUTO }
@@ -16,6 +18,8 @@ data class HomeUiState(
     val locationPermissionMissing: Boolean,
     val dock: Map<DockSlot, String?>,
     val dark: Boolean,
+    val accent: ThemeAccent = ThemeAccent.GAUGE_GREEN,
+    val recentCalls: List<CallEntry> = emptyList(),
 )
 
 class HomeActions(

@@ -2,6 +2,7 @@ package io.github.yorulmazsinan.kokpit.settings
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
+import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import io.github.yorulmazsinan.kokpit.intro.IntroMode
 import io.github.yorulmazsinan.kokpit.intro.IntroSettings
 import java.io.File
@@ -43,6 +44,7 @@ class SettingsRepositoryTest {
     fun defaultsMatchSpec() = withRepository { repo ->
         val s = repo.current()
         assertEquals(ThemeMode.DARK, s.themeMode)
+        assertEquals(ThemeAccent.GAUGE_GREEN, s.accent)
         assertEquals(true, s.autoWifi)
         assertEquals(false, s.autoCarPlayOnUsb)
         assertEquals(null, s.hotspotSsid)
@@ -56,6 +58,7 @@ class SettingsRepositoryTest {
             repo.update {
                 it.copy(
                     themeMode = ThemeMode.AUTO,
+                    accent = ThemeAccent.NIGHT_BLUE,
                     hotspotSsid = "iPhone",
                     hotspotPassword = "gizliparola123",
                     autoCarPlayOnUsb = true,
@@ -65,6 +68,7 @@ class SettingsRepositoryTest {
         }
         val reloaded = withRepository { it.current() }
         assertEquals(ThemeMode.AUTO, reloaded.themeMode)
+        assertEquals(ThemeAccent.NIGHT_BLUE, reloaded.accent)
         assertEquals("iPhone", reloaded.hotspotSsid)
         assertEquals("gizliparola123", reloaded.hotspotPassword)
         assertEquals(true, reloaded.autoCarPlayOnUsb)

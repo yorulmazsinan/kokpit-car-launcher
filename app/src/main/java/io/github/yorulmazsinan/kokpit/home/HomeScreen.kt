@@ -33,6 +33,8 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                 now = now,
                 weather = state.weather,
                 calendar = state.calendar,
+                recentCalls = state.recentCalls,
+                onOpenPhone = { actions.onDock(DockSlot.PHONE) },
                 onAssistant = actions.onAssistant,
                 onOpenSettings = actions.onOpenSettings,
                 onRequestPermissions = actions.onRequestPermissions,

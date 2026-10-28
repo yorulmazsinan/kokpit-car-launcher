@@ -1,5 +1,6 @@
 package io.github.yorulmazsinan.kokpit.home.cards
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +53,7 @@ private fun DockButton(slot: DockSlot, onClick: () -> Unit, onLongClick: () -> U
             .testTag("dock_${slot.name}"),
         shape = RoundedCornerShape(10.dp),
         color = if (highlighted) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        border = if (highlighted) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             Modifier
