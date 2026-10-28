@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import io.github.yorulmazsinan.kokpit.R
@@ -20,6 +21,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 import java.util.TimeZone
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -99,5 +101,13 @@ class HomeScreenTest {
             compose.onNodeWithTag("dock_${slot.name}").assertExists().assertHeightIsAtLeast(64.dp)
         }
         compose.onNodeWithTag("dock_${DockSlot.ASSISTANT.name}").assertDoesNotExist()
+    }
+
+    @Test
+    fun settingsButtonIsVisibleAndOpensSettings() {
+        var opened = false
+        compose.setContent { KokpitTheme { HomeScreen(base, now, HomeActions(onOpenSettings = { opened = true })) } }
+        compose.onNodeWithTag("home_settings").assertExists().assertHeightIsAtLeast(64.dp).performClick()
+        assertTrue(opened)
     }
 }

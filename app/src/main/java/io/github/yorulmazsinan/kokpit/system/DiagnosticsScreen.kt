@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import io.github.yorulmazsinan.kokpit.R
+import io.github.yorulmazsinan.kokpit.storage.removableAppDirs
+import io.github.yorulmazsinan.kokpit.storage.writeToDirs
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 
@@ -46,8 +48,13 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 Text(stringResource(R.string.diagnostics_copy))
             }
             OutlinedButton(onClick = {
-                runCatching { saveLauncher.launch("kokpit-diagnostics.txt") }
-                    .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
+                val written = writeToDirs(removableAppDirs(context), "kokpit-diagnostics.txt", text)
+                if (written.isNotEmpty()) {
+                    Toast.makeText(context, R.string.diagnostics_saved_usb, Toast.LENGTH_LONG).show()
+                } else {
+                    runCatching { saveLauncher.launch("kokpit-diagnostics.txt") }
+                        .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
+                }
             }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_save))
             }

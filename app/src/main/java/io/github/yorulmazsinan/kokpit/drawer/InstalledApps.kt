@@ -3,6 +3,8 @@ package io.github.yorulmazsinan.kokpit.drawer
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import io.github.yorulmazsinan.kokpit.dock.DockTarget
+import io.github.yorulmazsinan.kokpit.dock.parseDockTarget
 import java.text.Collator
 
 data class AppEntry(val packageName: String, val label: String, val component: ComponentName)
@@ -29,7 +31,19 @@ class InstalledApps(private val pm: PackageManager, private val ownPackage: Stri
             .mapTo(mutableSetOf()) { it.activityInfo.packageName }
             .apply { remove(ownPackage) }
 
-    fun launchIntent(packageName: String): Intent? = pm.getLaunchIntentForPackage(packageName)
+    /** Launch intent for a stored dock target (`package` or `package/class`). */
+    fun launchIntent(target: String): Intent? = when (val t = parseDockTarget(target)) {
+        is DockTarget.Package -> pm.getLaunchIntentForPackage(t.packageName)
+        is DockTarget.Component -> launcherIntent(ComponentName(t.packageName, t.className))
+    }
+
+    /** Human label for a stored dock target: the screen's own label, or the app's. */
+    fun label(target: String): String = runCatching {
+        when (val t = parseDockTarget(target)) {
+            is DockTarget.Package -> pm.getApplicationLabel(pm.getApplicationInfo(t.packageName, 0)).toString()
+            is DockTarget.Component -> pm.getActivityInfo(ComponentName(t.packageName, t.className), 0).loadLabel(pm).toString()
+        }
+    }.getOrDefault(target)
 }
 
 /** Launches an app in its own task, the way a launcher must (Home must not destroy it). */

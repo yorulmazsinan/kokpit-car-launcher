@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Grain
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.NightsStay
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Thunderstorm
 import androidx.compose.material.icons.outlined.Umbrella
 import androidx.compose.material.icons.outlined.WbCloudy
@@ -58,6 +59,7 @@ fun ClockCard(
     weather: WeatherState,
     calendar: CalendarState,
     onAssistant: () -> Unit,
+    onOpenSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,6 +74,14 @@ fun ClockCard(
                             .replaceFirstChar { it.titlecase(Locale.getDefault()) },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onOpenSettings, modifier = Modifier.size(Dimens.MinTouch).testTag("home_settings")) {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.settings_title),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(30.dp),
                     )
                 }
                 IconButton(onClick = onAssistant, modifier = Modifier.size(Dimens.MinTouch)) {

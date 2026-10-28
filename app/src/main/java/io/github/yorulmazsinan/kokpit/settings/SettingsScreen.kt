@@ -84,7 +84,7 @@ fun SettingsScreen(
             DockSlot.entries.filter { it != DockSlot.APPS }.forEach { slot ->
                 item(key = "dock_${slot.name}") {
                     val target = dock[slot]
-                    val label = target?.let { appLabel(context, it) } ?: stringResource(R.string.settings_not_set)
+                    val label = target?.let(container.installedApps::label) ?: stringResource(R.string.settings_not_set)
                     ListRow(stringResource(slot.label), label) { onPickApp(slot) }
                 }
             }
@@ -165,7 +165,3 @@ fun SettingsScreen(
     }
 }
 
-private fun appLabel(context: android.content.Context, packageName: String): String = runCatching {
-    val pm = context.packageManager
-    pm.getApplicationLabel(pm.getApplicationInfo(packageName, 0)).toString()
-}.getOrDefault(packageName)

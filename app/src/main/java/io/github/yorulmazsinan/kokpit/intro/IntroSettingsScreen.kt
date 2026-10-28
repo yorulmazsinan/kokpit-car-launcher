@@ -1,6 +1,8 @@
 package io.github.yorulmazsinan.kokpit.intro
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.widget.Toast
@@ -35,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.yorulmazsinan.kokpit.AppContainer
 import io.github.yorulmazsinan.kokpit.R
+import io.github.yorulmazsinan.kokpit.storage.findVideos
+import io.github.yorulmazsinan.kokpit.storage.removableRoots
+import java.io.File
 import io.github.yorulmazsinan.kokpit.ui.components.HelpText
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.components.SectionHeader
@@ -56,12 +61,36 @@ fun IntroSettingsScreen(container: AppContainer, onBack: () -> Unit) {
         scope.launch { container.settings.update { it.copy(intro = transform(it.intro)) } }
     }
 
+    var usbVideos by remember { mutableStateOf<List<File>?>(null) }
+    fun importFiles(files: List<File>) {
+        scope.launch {
+            val errors = withContext(Dispatchers.IO) {
+                files.count { f -> container.introLibrary.import(f.inputStream(), f.name, f.length()).isFailure }
+            }
+            videos = container.introLibrary.list()
+            if (errors > 0) Toast.makeText(context, R.string.intro_import_failed, Toast.LENGTH_LONG).show()
+            if (videos.isNotEmpty() && intro.mode == IntroMode.OFF) update { it.copy(mode = IntroMode.SELECTED) }
+        }
+    }
+    fun scanUsb() {
+        scope.launch {
+            usbVideos = withContext(Dispatchers.IO) { findVideos(removableRoots(context)) }
+        }
+    }
+    val storagePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { scanUsb() }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         scope.launch {
             val errors = withContext(Dispatchers.IO) { uris.count { !importUri(context, container.introLibrary, it) } }
             videos = container.introLibrary.list()
             if (errors > 0) Toast.makeText(context, R.string.intro_import_failed, Toast.LENGTH_LONG).show()
             if (videos.isNotEmpty() && intro.mode == IntroMode.OFF) update { it.copy(mode = IntroMode.SELECTED) }
+        }
+    }
+
+    usbVideos?.let { found ->
+        UsbVideoDialog(found, onDismiss = { usbVideos = null }) { chosen ->
+            usbVideos = null
+            importFiles(chosen)
         }
     }
 
@@ -89,14 +118,20 @@ fun IntroSettingsScreen(container: AppContainer, onBack: () -> Unit) {
             item { ToggleRow(stringResource(R.string.intro_with_sound), intro.withSound) { on -> update { it.copy(withSound = on) } } }
             item {
                 Button(
-                    onClick = {
-                        runCatching { picker.launch(arrayOf("video/mp4")) }
-                            .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
-                    },
+                    onClick = { storagePermission.launch(readVideoPermission()) },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
                 ) { Text(stringResource(R.string.intro_add)) }
             }
             item { HelpText(stringResource(R.string.intro_add_help)) }
+            item {
+                TextButton(
+                    onClick = {
+                        runCatching { picker.launch(arrayOf("video/mp4")) }
+                            .onFailure { Toast.makeText(context, R.string.start_failed, Toast.LENGTH_SHORT).show() }
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp).heightIn(min = Dimens.MinTouch),
+                ) { Text(stringResource(R.string.intro_add_other)) }
+            }
             item { SectionHeader(stringResource(R.string.intro_library)) }
             items(videos, key = { it.id }) { video ->
                 Row(
@@ -144,3 +179,6 @@ private fun importUri(context: Context, library: IntroVideoLibrary, uri: Uri): B
     val input = runCatching { context.contentResolver.openInputStream(uri) }.getOrNull() ?: return false
     return library.import(input, name, size).isSuccess
 }
+
+private fun readVideoPermission(): String =
+    if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_VIDEO else Manifest.permission.READ_EXTERNAL_STORAGE

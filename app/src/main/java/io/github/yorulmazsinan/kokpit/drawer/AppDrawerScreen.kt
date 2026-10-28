@@ -34,14 +34,16 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.ListRow
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit) {
+fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit, onOpenSettings: () -> Unit) {
     val context = LocalContext.current
     val entries by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { apps.launchable() } }
     ScreenScaffold(stringResource(R.string.dock_apps), onBack) {
+        ListRow(stringResource(R.string.settings_title), stringResource(R.string.drawer_settings_hint), onClick = onOpenSettings)
         LazyVerticalGrid(GridCells.Adaptive(150.dp), Modifier.padding(horizontal = 12.dp)) {
             items(entries, key = { it.component.flattenToString() }) { app ->
                 val icon by produceState<ImageBitmap?>(null, app.component) {

@@ -113,4 +113,11 @@
     <string name="intro_delete">Delete</string>
     <string name="intro_import_failed">Some files were skipped: only MP4 videos up to 20 MB can be added.</string>
     <string name="settings_password_reenter">The saved hotspot password can\'t be read anymore. Enter it again and tap Save.</string>
+    <string name="drawer_settings_hint">Kokpit settings, system tools and diagnostics</string>
+    <string name="intro_add_other">Choose from Another Location</string>
+    <string name="intro_usb_title">Videos on USB</string>
+    <string name="intro_usb_empty">No MP4 videos were found on the USB stick or SD card. Check that it is plugged in and allow storage access.</string>
+    <string name="intro_usb_import">Add %1$d</string>
+    <string name="cancel">Cancel</string>
+    <string name="diagnostics_saved_usb">Saved to the USB stick: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
 </resources>

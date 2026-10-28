@@ -73,7 +73,7 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
                 nav.popBackStack()
             }
         }
-        composable(Routes.DRAWER) { AppDrawerScreen(container.installedApps, onBack = { nav.popBackStack() }) }
+        composable(Routes.DRAWER) { AppDrawerScreen(container.installedApps, onBack = { nav.popBackStack() }, onOpenSettings = { nav.navigate(Routes.SETTINGS) }) }
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 container = container,

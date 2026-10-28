@@ -33,4 +33,22 @@ class DockResolverTest {
         assertEquals("com.openai.chatgpt", resolveDockTarget(DockSlot.ASSISTANT, setOf("com.openai.chatgpt"), override = "com.openai.chatgpt"))
         assertEquals(6, DockSlot.entries.count { it.inDock })
     }
+
+    @Test
+    fun componentOverrideIsKeptWhenItsPackageIsInstalled() {
+        val radio = "com.ts.MainUI/com.ts.main.radio.RadioActivity"
+        assertEquals(radio, resolveDockTarget(DockSlot.RADIO, setOf("com.ts.MainUI"), override = radio))
+        assertNull(resolveDockTarget(DockSlot.RADIO, setOf("com.other"), override = radio))
+    }
+
+    @Test
+    fun headUnitCarPlayAppsAreKnown() {
+        assertEquals("com.ts.carplayapp", resolveDockTarget(DockSlot.CARPLAY, setOf("com.autochips.carplay", "com.ts.carplayapp"), override = null))
+    }
+
+    @Test
+    fun targetIntentLaunchesComponentOrPackage() {
+        assertEquals(DockTarget.Component("com.ts.MainUI", "com.ts.main.radio.RadioActivity"), parseDockTarget("com.ts.MainUI/com.ts.main.radio.RadioActivity"))
+        assertEquals(DockTarget.Package("com.ts.carplayapp"), parseDockTarget("com.ts.carplayapp"))
+    }
 }

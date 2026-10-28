@@ -73,6 +73,7 @@ fun HomeRoute(
                 if (slot == DockSlot.APPS) onOpenDrawer() else if (!launchSlot(slot)) onPickApp(slot)
             },
             onDockLongPress = { slot -> if (slot == DockSlot.APPS) onOpenSettings() else onPickApp(slot) },
+            onOpenSettings = onOpenSettings,
             onAssistant = {
                 if (!launchSlot(DockSlot.ASSISTANT)) {
                     Toast.makeText(context, R.string.assistant_not_set, Toast.LENGTH_LONG).show()

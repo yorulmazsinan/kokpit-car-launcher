@@ -20,7 +20,7 @@ fun AppPickerScreen(slot: DockSlot, onBack: () -> Unit, onPick: (String?) -> Uni
         LazyColumn {
             item { ListRow(stringResource(R.string.app_picker_default)) { onPick(null) } }
             items(apps, key = { it.component.flattenToString() }) { app ->
-                ListRow(app.label, app.packageName) { onPick(app.packageName) }
+                ListRow(app.label, app.component.flattenToShortString()) { onPick(app.component.flattenToString()) }
             }
         }
     }

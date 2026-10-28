@@ -6,7 +6,7 @@ package io.github.yorulmazsinan.kokpit.dock
  */
 object KnownPackages {
     val candidates: Map<DockSlot, List<String>> = mapOf(
-        DockSlot.CARPLAY to listOf("com.zjinnova.zlink"),
+        DockSlot.CARPLAY to listOf("com.ts.carplayapp", "com.autochips.carplay", "com.zjinnova.zlink", "net.easyconn"),
         DockSlot.MAPS to listOf(
             "com.google.android.apps.maps",
             "ru.yandex.yandexnavi",

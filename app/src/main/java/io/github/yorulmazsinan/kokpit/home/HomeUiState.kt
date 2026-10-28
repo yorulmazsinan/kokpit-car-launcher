@@ -22,6 +22,7 @@ class HomeActions(
     val onDock: (DockSlot) -> Unit = {},
     val onDockLongPress: (DockSlot) -> Unit = {},
     val onAssistant: () -> Unit = {},
+    val onOpenSettings: () -> Unit = {},
     val onPlayPause: () -> Unit = {},
     val onNext: () -> Unit = {},
     val onPrevious: () -> Unit = {},

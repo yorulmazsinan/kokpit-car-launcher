@@ -34,6 +34,7 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                 weather = state.weather,
                 calendar = state.calendar,
                 onAssistant = actions.onAssistant,
+                onOpenSettings = actions.onOpenSettings,
                 onRequestPermissions = actions.onRequestPermissions,
                 modifier = Modifier.weight(1.25f).fillMaxHeight(),
             )

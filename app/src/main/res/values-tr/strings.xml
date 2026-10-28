@@ -113,4 +113,11 @@
     <string name="intro_delete">Sil</string>
     <string name="intro_import_failed">Bazı dosyalar eklenmedi: yalnız 20 MB\'a kadar MP4 videolar eklenebilir.</string>
     <string name="settings_password_reenter">Kayıtlı erişim noktası parolası artık okunamıyor. Parolayı yeniden girip Kaydet\'e dokunun.</string>
+    <string name="drawer_settings_hint">Kokpit ayarları, sistem araçları ve teşhis</string>
+    <string name="intro_add_other">Başka Konumdan Seç</string>
+    <string name="intro_usb_title">USB\'deki Videolar</string>
+    <string name="intro_usb_empty">USB bellekte veya SD kartta MP4 video bulunamadı. Takılı olduğundan emin olun ve depolama iznini verin.</string>
+    <string name="intro_usb_import">%1$d Video Ekle</string>
+    <string name="cancel">İptal</string>
+    <string name="diagnostics_saved_usb">USB belleğe kaydedildi: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
 </resources>
