@@ -45,7 +45,7 @@ class HomeScreenshotTest {
             UpcomingEvent("Müşteri toplantısı", now.withHour(16).withMinute(30).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()),
         ),
         media = NowPlayingState.Playing(NowPlaying("Gesi Bağları", "Barış Manço", "Spotify", null, isPlaying = true)),
-        trip = TripSnapshot(speedKmh = 62, compass = CompassPoint.NW, averageKmh = 48, hasFix = true),
+        trip = TripSnapshot(speedKmh = 62, compass = CompassPoint.NW, averageKmh = 48, hasFix = true, bearingDeg = 315f),
         locationPermissionMissing = false,
         dock = DockSlot.entries.associateWith { null },
         dark = dark,

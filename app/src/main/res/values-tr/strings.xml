@@ -127,4 +127,12 @@
     <string name="accent_teal">Turkuaz</string>
     <string name="speed_unit">km/s</string>
     <string name="recent_calls">Son Aramalar</string>
+    <string name="compass_full_n">Kuzey</string>
+    <string name="compass_full_ne">Kuzeydoğu</string>
+    <string name="compass_full_e">Doğu</string>
+    <string name="compass_full_se">Güneydoğu</string>
+    <string name="compass_full_s">Güney</string>
+    <string name="compass_full_sw">Güneybatı</string>
+    <string name="compass_full_w">Batı</string>
+    <string name="compass_full_nw">Kuzeybatı</string>
 </resources>

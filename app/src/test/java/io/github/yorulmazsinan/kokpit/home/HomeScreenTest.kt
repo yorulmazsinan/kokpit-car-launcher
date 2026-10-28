@@ -12,6 +12,7 @@ import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
 import io.github.yorulmazsinan.kokpit.calls.CallEntry
 import io.github.yorulmazsinan.kokpit.calls.CallType
+import io.github.yorulmazsinan.kokpit.drive.CompassPoint
 import io.github.yorulmazsinan.kokpit.calendar.UpcomingEvent
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
@@ -131,5 +132,19 @@ class HomeScreenTest {
     fun hidesRecentCallsWhenNone() {
         show(base)
         compose.onNodeWithTag("recent_calls").assertDoesNotExist()
+    }
+
+    @Test
+    fun compassCardShowsFullHeadingName() {
+        show(base.copy(trip = TripSnapshot(speedKmh = 62, compass = CompassPoint.NW, averageKmh = null, hasFix = true, bearingDeg = 315f)))
+        compose.onNodeWithTag("compass_card").assertExists()
+        compose.onNodeWithText(context.getString(R.string.compass_full_nw)).assertExists()
+        compose.onNodeWithText("315°").assertExists()
+    }
+
+    @Test
+    fun musicCardSeparatesInfoFromControls() {
+        show(base.copy(media = NowPlayingState.Playing(io.github.yorulmazsinan.kokpit.media.NowPlaying("Şarkı", "Sanatçı", "Spotify", null, true))))
+        compose.onNodeWithTag("music_divider").assertExists()
     }
 }

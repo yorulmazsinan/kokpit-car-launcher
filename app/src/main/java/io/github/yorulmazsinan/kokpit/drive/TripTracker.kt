@@ -16,7 +16,13 @@ data class Fix(
     val bearingDeg: Float?,
 )
 
-data class TripSnapshot(val speedKmh: Int?, val compass: CompassPoint?, val averageKmh: Int?, val hasFix: Boolean)
+data class TripSnapshot(
+    val speedKmh: Int?,
+    val compass: CompassPoint?,
+    val averageKmh: Int?,
+    val hasFix: Boolean,
+    val bearingDeg: Float? = null,
+)
 
 /**
  * Average speed = distance ÷ time the unit was awake. Stops while awake count (like the
@@ -84,6 +90,7 @@ class TripTracker(private val resetAfterSleepMs: Long = 30 * 60_000L) {
             compass = if (hasFix) fix?.bearingDeg?.let(CompassPoint::fromBearing) else null,
             averageKmh = average,
             hasFix = hasFix,
+            bearingDeg = if (hasFix) fix?.bearingDeg else null,
         )
     }
 

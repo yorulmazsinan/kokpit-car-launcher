@@ -127,4 +127,12 @@
     <string name="accent_teal">Teal</string>
     <string name="speed_unit">km/h</string>
     <string name="recent_calls">Recent Calls</string>
+    <string name="compass_full_n">North</string>
+    <string name="compass_full_ne">Northeast</string>
+    <string name="compass_full_e">East</string>
+    <string name="compass_full_se">Southeast</string>
+    <string name="compass_full_s">South</string>
+    <string name="compass_full_sw">Southwest</string>
+    <string name="compass_full_w">West</string>
+    <string name="compass_full_nw">Northwest</string>
 </resources>

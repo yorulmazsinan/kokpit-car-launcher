@@ -14,7 +14,8 @@ import androidx.compose.ui.Modifier
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.home.cards.ClockCard
 import io.github.yorulmazsinan.kokpit.home.cards.Dock
-import io.github.yorulmazsinan.kokpit.home.cards.DriveCard
+import io.github.yorulmazsinan.kokpit.home.cards.CompassCard
+import io.github.yorulmazsinan.kokpit.home.cards.SpeedCard
 import io.github.yorulmazsinan.kokpit.home.cards.NowPlayingCard
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 import java.time.LocalDateTime
@@ -48,14 +49,15 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                     onPrevious = actions.onPrevious,
                     onPlayPause = actions.onPlayPause,
                     onNext = actions.onNext,
-                    modifier = Modifier.weight(1.3f).fillMaxWidth(),
+                    modifier = Modifier.weight(0.95f).fillMaxWidth(),
                 )
-                DriveCard(
+                SpeedCard(
                     trip = state.trip,
                     permissionMissing = state.locationPermissionMissing,
                     onRequestPermissions = actions.onRequestPermissions,
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier.weight(1.45f).fillMaxWidth(),
                 )
+                CompassCard(state.trip, Modifier.weight(0.6f).fillMaxWidth())
             }
         }
         Dock(actions.onDock, actions.onDockLongPress)

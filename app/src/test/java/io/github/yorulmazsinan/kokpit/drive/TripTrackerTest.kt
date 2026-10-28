@@ -79,6 +79,7 @@ class TripTrackerTest {
         assertTrue(fresh.hasFix)
         assertEquals(36, fresh.speedKmh)
         assertEquals(CompassPoint.E, fresh.compass)
+        assertEquals(90f, fresh.bearingDeg)
         val stale = tracker.snapshot(7000)
         assertFalse(stale.hasFix)
         assertNull(stale.speedKmh)

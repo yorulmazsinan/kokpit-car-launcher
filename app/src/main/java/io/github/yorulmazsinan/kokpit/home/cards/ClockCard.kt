@@ -45,10 +45,7 @@ import io.github.yorulmazsinan.kokpit.ui.theme.KokpitFonts
 import androidx.compose.material.icons.outlined.CallMade
 import androidx.compose.material.icons.outlined.CallMissed
 import androidx.compose.material.icons.outlined.CallReceived
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 import io.github.yorulmazsinan.kokpit.weather.Weather
@@ -198,16 +195,10 @@ fun WeatherCondition.icon(isDay: Boolean): ImageVector = when (this) {
 
 @Composable
 private fun StyledClock(now: LocalDateTime) {
-    val hours = now.format(DateTimeFormatter.ofPattern("HH"))
-    val minutes = now.format(DateTimeFormatter.ofPattern("mm"))
-    val colors = MaterialTheme.colorScheme
     Text(
-        buildAnnotatedString {
-            withStyle(SpanStyle(fontFamily = KokpitFonts.condensed, color = colors.secondary)) { append(hours) }
-            withStyle(SpanStyle(fontFamily = KokpitFonts.condensedLight, color = colors.onSurfaceVariant)) { append(":") }
-            withStyle(SpanStyle(fontFamily = KokpitFonts.condensedLight, color = colors.onSurface)) { append(minutes) }
-        },
-        style = TextStyle(fontSize = 92.sp, lineHeight = 92.sp),
+        now.format(timeFormat),
+        style = TextStyle(fontFamily = KokpitFonts.condensed, fontSize = 92.sp, lineHeight = 92.sp),
+        color = MaterialTheme.colorScheme.secondary,
     )
 }
 

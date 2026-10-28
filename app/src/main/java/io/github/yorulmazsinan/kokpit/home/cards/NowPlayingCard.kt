@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -77,6 +79,10 @@ fun NowPlayingCard(
                             )
                         }
                     }
+                    HorizontalDivider(
+                        Modifier.testTag("music_divider"),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         Control(Icons.Outlined.SkipPrevious, R.string.media_previous, onPrevious)
                         Control(if (np.isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow, R.string.media_play_pause, onPlayPause)
