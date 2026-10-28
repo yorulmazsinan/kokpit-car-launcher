@@ -120,4 +120,7 @@
     <string name="intro_usb_import">Add %1$d</string>
     <string name="cancel">Cancel</string>
     <string name="diagnostics_saved_usb">Saved to the USB stick: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
+    <string name="vendor_export">Copy Vendor Apps to USB</string>
+    <string name="vendor_export_done">%1$d vendor apps copied to the USB stick (Android › data › io.github.yorulmazsinan.kokpit › files › vendor)</string>
+    <string name="vendor_export_failed">Couldn\'t copy vendor apps. Plug in a USB stick and try again.</string>
 </resources>

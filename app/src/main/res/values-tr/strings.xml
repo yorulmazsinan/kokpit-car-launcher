@@ -120,4 +120,7 @@
     <string name="intro_usb_import">%1$d Video Ekle</string>
     <string name="cancel">İptal</string>
     <string name="diagnostics_saved_usb">USB belleğe kaydedildi: Android › data › io.github.yorulmazsinan.kokpit › files › kokpit-diagnostics.txt</string>
+    <string name="vendor_export">Üretici Uygulamalarını USB\'ye Kopyala</string>
+    <string name="vendor_export_done">%1$d üretici uygulaması USB\'ye kopyalandı (Android › data › io.github.yorulmazsinan.kokpit › files › vendor)</string>
+    <string name="vendor_export_failed">Üretici uygulamaları kopyalanamadı. USB belleği takıp tekrar deneyin.</string>
 </resources>

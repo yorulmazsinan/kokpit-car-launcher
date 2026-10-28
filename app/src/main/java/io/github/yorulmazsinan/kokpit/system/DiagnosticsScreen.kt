@@ -19,6 +19,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -59,6 +63,19 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
                 Text(stringResource(R.string.diagnostics_save))
             }
         }
+        val scope = rememberCoroutineScope()
+        OutlinedButton(
+            onClick = {
+                scope.launch {
+                    val dirs = removableAppDirs(context)
+                    val count = withContext(Dispatchers.IO) { exportVendorApks(context, dirs) }
+                    val message = if (dirs.isEmpty() || count == 0) context.getString(R.string.vendor_export_failed)
+                    else context.getString(R.string.vendor_export_done, count)
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            },
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
+        ) { Text(stringResource(R.string.vendor_export)) }
         SelectionContainer {
             Text(
                 text,
