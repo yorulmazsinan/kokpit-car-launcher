@@ -38,6 +38,8 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                 onOpenPhone = { actions.onDock(DockSlot.PHONE) },
                 onAssistant = actions.onAssistant,
                 onOpenSettings = actions.onOpenSettings,
+                onRefreshWeather = actions.onRefreshWeather,
+                onOpenCalendar = actions.onOpenCalendar,
                 onRequestPermissions = actions.onRequestPermissions,
                 modifier = Modifier.weight(1.25f).fillMaxHeight(),
             )
@@ -55,9 +57,10 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                     trip = state.trip,
                     permissionMissing = state.locationPermissionMissing,
                     onRequestPermissions = actions.onRequestPermissions,
+                    onOpenMaps = actions.onOpenMaps,
                     modifier = Modifier.weight(1.45f).fillMaxWidth(),
                 )
-                CompassCard(state.trip, Modifier.weight(0.6f).fillMaxWidth())
+                CompassCard(state.trip, Modifier.weight(0.6f).fillMaxWidth(), onClick = actions.onOpenMaps)
             }
         }
         Dock(actions.onDock, actions.onDockLongPress, appIcons = state.dockIcons)

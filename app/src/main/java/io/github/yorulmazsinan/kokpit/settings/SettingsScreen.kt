@@ -170,7 +170,11 @@ fun SettingsScreen(
             }
 
             item { SectionHeader(stringResource(R.string.settings_preview)) }
-            item { HelpText(stringResource(R.string.settings_preview_help)) }
+            item {
+                ToggleRow(stringResource(R.string.settings_use_kokpit_screens), settings.useKokpitScreens, stringResource(R.string.settings_use_kokpit_screens_help)) { on ->
+                    update { it.copy(useKokpitScreens = on) }
+                }
+            }
             item { ListRow(stringResource(R.string.phone_title)) { onOpenPreview("phone") } }
             item { ListRow(stringResource(R.string.bt_music_title)) { onOpenPreview("music") } }
             item { ListRow(stringResource(R.string.radio_title)) { onOpenPreview("radio") } }

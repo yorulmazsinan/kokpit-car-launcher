@@ -44,7 +44,7 @@ fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit, onOpenSettings: () 
     val entries by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { apps.launchable() } }
     ScreenScaffold(stringResource(R.string.dock_apps), onBack) {
         ListRow(stringResource(R.string.settings_title), stringResource(R.string.drawer_settings_hint), onClick = onOpenSettings)
-        LazyVerticalGrid(GridCells.Adaptive(150.dp), Modifier.padding(horizontal = 12.dp)) {
+        LazyVerticalGrid(GridCells.Adaptive(170.dp), Modifier.padding(horizontal = 12.dp)) {
             items(entries, key = { it.component.flattenToString() }) { app ->
                 val icon by produceState<ImageBitmap?>(null, app.component) {
                     value = withContext(Dispatchers.IO) {
@@ -63,11 +63,11 @@ fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit, onOpenSettings: () 
                         .padding(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    icon?.let { Image(it, null, Modifier.size(56.dp)) } ?: Spacer(Modifier.size(56.dp))
+                    icon?.let { Image(it, null, Modifier.size(64.dp)) } ?: Spacer(Modifier.size(64.dp))
                     Spacer(Modifier.height(8.dp))
                     Text(
                         app.label,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onBackground,
                         textAlign = TextAlign.Center,
                         maxLines = 2,

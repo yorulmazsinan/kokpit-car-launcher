@@ -27,6 +27,9 @@ private val RUNTIME_PERMISSIONS = arrayOf(
     Manifest.permission.READ_CALL_LOG,
 )
 
+/** Dock slots Kokpit has its own screens for (navigation routes). */
+private val KOKPIT_SCREENS = mapOf(DockSlot.PHONE to "phone", DockSlot.BLUETOOTH to "music", DockSlot.RADIO to "radio")
+
 @Composable
 fun HomeRoute(
     container: AppContainer,
@@ -34,6 +37,7 @@ fun HomeRoute(
     onOpenDrawer: () -> Unit,
     onOpenSettings: () -> Unit,
     onPickApp: (DockSlot) -> Unit,
+    onOpenScreen: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val now by produceState(LocalDateTime.now()) {
@@ -72,10 +76,20 @@ fun HomeRoute(
         now = now,
         actions = HomeActions(
             onDock = { slot ->
-                if (slot == DockSlot.APPS) onOpenDrawer() else if (!launchSlot(slot)) onPickApp(slot)
+                val ownScreen = KOKPIT_SCREENS[slot]
+                when {
+                    slot == DockSlot.APPS -> onOpenDrawer()
+                    ownScreen != null && container.settings.settings.value.useKokpitScreens -> onOpenScreen(ownScreen)
+                    !launchSlot(slot) -> onPickApp(slot)
+                }
             },
             onDockLongPress = { slot -> if (slot == DockSlot.APPS) onOpenSettings() else onPickApp(slot) },
             onOpenSettings = onOpenSettings,
+            onOpenCalendar = {
+                safeStart(context, Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR))
+            },
+            onOpenMaps = { if (!launchSlot(DockSlot.MAPS)) onPickApp(DockSlot.MAPS) },
+            onRefreshWeather = { container.scope.launch { container.weather.refresh() } },
             onAssistant = {
                 if (!launchSlot(DockSlot.ASSISTANT)) {
                     Toast.makeText(context, R.string.assistant_not_set, Toast.LENGTH_LONG).show()

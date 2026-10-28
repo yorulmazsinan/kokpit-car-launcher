@@ -79,6 +79,9 @@ class TripTracker(private val resetAfterSleepMs: Long = 30 * 60_000L) {
         lastSpeedMps = fix.speedMps ?: computedSpeed
     }
 
+    /** Last accepted position, for coarse uses like weather when no last-known location exists. */
+    fun lastPosition(): Pair<Double, Double>? = lastFix?.let { it.lat to it.lon }
+
     fun snapshot(nowElapsedMs: Long): TripSnapshot {
         val awakeMs = awakeAccumulatedMs + (awakeSinceMs?.let { nowElapsedMs - it } ?: 0L)
         val average = if (awakeMs < MIN_AWAKE_FOR_AVERAGE_MS) null

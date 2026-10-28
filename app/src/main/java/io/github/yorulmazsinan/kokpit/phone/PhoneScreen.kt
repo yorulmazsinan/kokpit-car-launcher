@@ -70,7 +70,7 @@ import kotlinx.coroutines.withContext
 private enum class PhoneTab(val label: Int) { RECENT(R.string.phone_recent), CONTACTS(R.string.phone_contacts), FAVOURITES(R.string.phone_favourites) }
 
 @Composable
-fun PhoneScreen(calls: List<CallEntry>, onBack: () -> Unit) {
+fun PhoneScreen(calls: List<CallEntry>, deviceName: String?, onBack: () -> Unit, vendorDial: ((String) -> Boolean)? = null) {
     val context = LocalContext.current
     var contacts by remember { mutableStateOf(emptyList<Contact>()) }
     var reload by remember { mutableStateOf(0) }
@@ -78,16 +78,26 @@ fun PhoneScreen(calls: List<CallEntry>, onBack: () -> Unit) {
     LaunchedEffect(Unit) { permission.launch(Manifest.permission.READ_CONTACTS) }
     LaunchedEffect(reload) { contacts = withContext(Dispatchers.IO) { loadContacts(context) } }
     fun dial(number: String) {
-        if (number.isNotBlank()) safeStart(context, Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(number))))
+        if (number.isBlank()) return
+        // The unit's Bluetooth stack places the call itself; plain Android only opens a dialler.
+        if (vendorDial?.invoke(number) != true) safeStart(context, Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(number))))
     }
-    PhoneContent(calls, contacts, onBack, ::dial)
+    PhoneContent(calls, contacts, onBack, ::dial, deviceName)
 }
 
 @Composable
-fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> Unit, onDial: (String) -> Unit) {
+fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> Unit, onDial: (String) -> Unit, deviceName: String? = null) {
     var tab by remember { mutableStateOf(PhoneTab.RECENT) }
     var typed by remember { mutableStateOf("") }
-    ScreenScaffold(stringResource(R.string.phone_title), onBack, actions = { HeaderClock() }) {
+    ScreenScaffold(stringResource(R.string.phone_title), onBack, actions = {
+        Text(
+            deviceName ?: stringResource(R.string.phone_not_connected),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = 16.dp),
+        )
+        HeaderClock()
+    }) {
         Row(
             Modifier.fillMaxSize().padding(start = Dimens.ScreenPadding, end = Dimens.ScreenPadding, bottom = Dimens.ScreenPadding),
             horizontalArrangement = Arrangement.spacedBy(Dimens.Gap),

@@ -43,7 +43,10 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val text = remember {
         DiagnosticsCollector(context).collect().toText() +
-            (readCrashLog(context)?.let { "\n[last crashes]\n$it" } ?: "")
+            (readCrashLog(context)?.let { "\n[last crashes]\n$it" } ?: "") +
+            "\n[media events]\n" + io.github.yorulmazsinan.kokpit.media.MediaEventLog.shared.lines().joinToString("\n") +
+            "\n\n[head unit]\n" + (context.applicationContext as io.github.yorulmazsinan.kokpit.KokpitApp).container.headUnit.probe().joinToString("\n") +
+            "\n\n[power events]\n" + io.github.yorulmazsinan.kokpit.connect.PowerEventLog.lines(context).joinToString("\n")
     }
     val saveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
         if (uri != null) {

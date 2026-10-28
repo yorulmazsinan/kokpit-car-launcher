@@ -14,6 +14,7 @@ import io.github.yorulmazsinan.kokpit.connect.WifiAutoConnector
 import io.github.yorulmazsinan.kokpit.dock.DockRepository
 import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
+import io.github.yorulmazsinan.kokpit.headunit.HeadUnit
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
@@ -48,10 +49,11 @@ class AppContainer(context: Context) {
 
     val locationSource = LocationSource(appContext)
     val drive = DriveRepository(scope, locationSource, TripTracker())
-    val weather = WeatherRepository(OpenMeteoClient(http), appContext.weatherStore, locationSource::lastKnown)
+    val weather = WeatherRepository(OpenMeteoClient(http), appContext.weatherStore, { locationSource.lastKnown() ?: drive.lastPosition() })
     val calendar = CalendarRepository(appContext, scope)
     val nowPlaying = NowPlayingRepository(appContext)
     val calls = CallLogRepository(appContext, scope)
+    val headUnit = HeadUnit(appContext, scope)
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
     val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)
@@ -80,6 +82,7 @@ class AppContainer(context: Context) {
         weather.start(scope)
         calendar.start()
         calls.refresh()
+        headUnit.start()
         nowPlaying.refreshAccess()
         val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
         connectivity.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {

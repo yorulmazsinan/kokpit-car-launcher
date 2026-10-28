@@ -53,7 +53,7 @@ class WeatherRepositoryTest {
         server.enqueue(MockResponse.Builder().body(sampleJson()).headersDelay(3, TimeUnit.SECONDS).build())
         val fresh = repository(store = store)
         val job = backgroundScope.launch(Dispatchers.Default) { fresh.refresh() }
-        val seen = withContext(Dispatchers.Default) { withTimeout(1_500) { fresh.state.first { it != WeatherState.NoData } } }
+        val seen = withContext(Dispatchers.Default) { withTimeout(1_500) { fresh.state.first { it !is WeatherState.NoData } } }
         assertTrue(seen is WeatherState.Fresh)
         job.cancel()
     }
@@ -64,7 +64,7 @@ class WeatherRepositoryTest {
         val empty = sampleJson().replace("[21.0]", "[]").replace("[12.1]", "[]")
         server.enqueue(MockResponse.Builder().body(empty).build())
         repo.refresh()
-        assertEquals(WeatherState.NoData, repo.state.value)
+        assertEquals(WeatherState.NoData(WeatherProblem.NO_NETWORK), repo.state.value)
     }
 
     @Test
@@ -119,7 +119,15 @@ class WeatherRepositoryTest {
     fun noLocationKeepsNoData() = runTest {
         val repo = repository(location = null)
         repo.refresh()
-        assertEquals(WeatherState.NoData, repo.state.value)
+        assertEquals(WeatherState.NoData(WeatherProblem.NO_LOCATION), repo.state.value)
         assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun networkFailureWithoutCacheSaysNoInternet() = runTest {
+        val repo = repository()
+        server.close()
+        repo.refresh()
+        assertEquals(WeatherState.NoData(WeatherProblem.NO_NETWORK), repo.state.value)
     }
 }

@@ -43,6 +43,8 @@ class DriveRepository(
         fixJob = scope.launch { locationSource.fixes().collect(tracker::onFix) }
     }
 
+    fun lastPosition(): Pair<Double, Double>? = tracker.lastPosition()
+
     fun onWake(elapsedMs: Long) = tracker.onWake(elapsedMs)
 
     fun onSleep(elapsedMs: Long) = tracker.onSleep(elapsedMs)

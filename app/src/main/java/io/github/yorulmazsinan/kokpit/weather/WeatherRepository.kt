@@ -27,7 +27,7 @@ class WeatherRepository(
     private val location: () -> Pair<Double, Double>?,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
-    private val _state = MutableStateFlow<WeatherState>(WeatherState.NoData)
+    private val _state = MutableStateFlow<WeatherState>(WeatherState.NoData(WeatherProblem.NO_LOCATION))
     val state: StateFlow<WeatherState> = _state.asStateFlow()
     private var cached: Weather? = null
 
@@ -47,15 +47,17 @@ class WeatherRepository(
                 // Offline, server trouble or an unexpected response: keep the cached forecast.
             }
         }
-        _state.value = cached?.let(::classify) ?: WeatherState.NoData
+        _state.value = cached?.let(::classify)
+            ?: WeatherState.NoData(if (position == null) WeatherProblem.NO_LOCATION else WeatherProblem.NO_NETWORK)
     }
 
     /** Refreshes now and every [intervalMs] after. */
-    fun start(scope: CoroutineScope, intervalMs: Long = 30 * 60_000L) {
+    fun start(scope: CoroutineScope, intervalMs: Long = 30 * 60_000L, retryMs: Long = 2 * 60_000L) {
         scope.launch {
             while (isActive) {
                 refresh()
-                delay(intervalMs)
+                // Until the first forecast arrives (no GPS fix or hotspot yet), try again soon.
+                delay(if (_state.value is WeatherState.NoData) retryMs else intervalMs)
             }
         }
     }

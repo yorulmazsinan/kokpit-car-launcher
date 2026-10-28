@@ -27,23 +27,20 @@ import kotlinx.coroutines.launch
  * hotspot connection and the intro video.
  */
 class KokpitService : Service() {
-    private var sleptAtMs: Long? = null
-
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            // Screen events only keep the trip clock honest; ignition comes from POWER_ACTIONS.
             val now = SystemClock.elapsedRealtime()
+            val container = (application as KokpitApp).container
             when (intent.action) {
-                Intent.ACTION_SCREEN_OFF -> {
-                    sleptAtMs = now
-                    onEvent(WakeEvent.Sleep(now))
-                }
-                Intent.ACTION_SCREEN_ON -> {
-                    val slept = sleptAtMs?.let { now - it }
-                    sleptAtMs = null
-                    if (slept != null) onEvent(WakeEvent.Wake(now, slept))
-                }
+                Intent.ACTION_SCREEN_OFF -> container.drive.onSleep(now)
+                Intent.ACTION_SCREEN_ON -> container.drive.onWake(now)
             }
         }
+    }
+
+    private val powerReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = onPower(intent.action)
     }
 
     override fun onCreate() {
@@ -64,10 +61,20 @@ class KokpitService : Service() {
             addAction(Intent.ACTION_SCREEN_OFF)
         }
         ContextCompat.registerReceiver(this, screenReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        val power = IntentFilter().apply { POWER_ACTIONS.keys.forEach(::addAction) }
+        ContextCompat.registerReceiver(this, powerReceiver, power, ContextCompat.RECEIVER_EXPORTED)
+        // Started again after QuickBoot killed us at ignition off: that start is the wake-up.
+        PowerEventLog.takeSleepAt(this)?.let { sleepAt ->
+            val now = SystemClock.elapsedRealtime()
+            log("restart after sleep")
+            onEvent(WakeEvent.Wake(now, sleptFor(sleepAt, now)))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent?.getStringExtra(EXTRA_POWER_ACTION)?.let(::onPower)
         if (intent?.getBooleanExtra(EXTRA_COLD_BOOT, false) == true) {
+            log("boot")
             onEvent(WakeEvent.Wake(SystemClock.elapsedRealtime(), sleptMs = null))
         }
         return START_STICKY
@@ -75,10 +82,31 @@ class KokpitService : Service() {
 
     override fun onDestroy() {
         unregisterReceiver(screenReceiver)
+        unregisterReceiver(powerReceiver)
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun onPower(action: String?) {
+        val signal = powerSignalFor(action) ?: return
+        val now = SystemClock.elapsedRealtime()
+        log("$signal ($action)")
+        when (signal) {
+            PowerSignal.OFF -> {
+                PowerEventLog.storeSleepAt(this, now)
+                onEvent(WakeEvent.Sleep(now))
+            }
+            PowerSignal.ON -> {
+                val slept = sleptFor(PowerEventLog.takeSleepAt(this), now)
+                onEvent(WakeEvent.Wake(now, slept))
+            }
+        }
+    }
+
+    private fun log(event: String) {
+        PowerEventLog.add(this, "${java.time.LocalDateTime.now().withNano(0)} $event")
+    }
 
     private fun onEvent(event: WakeEvent) {
         WakeEvents.emit(event)
@@ -106,9 +134,12 @@ class KokpitService : Service() {
         const val CHANNEL_ID = "kokpit"
         private const val SERVICE_NOTIFICATION_ID = 1
         private const val EXTRA_COLD_BOOT = "cold_boot"
+        private const val EXTRA_POWER_ACTION = "power_action"
 
-        fun start(context: Context, coldBoot: Boolean = false) {
-            val intent = Intent(context, KokpitService::class.java).putExtra(EXTRA_COLD_BOOT, coldBoot)
+        fun start(context: Context, coldBoot: Boolean = false, powerAction: String? = null) {
+            val intent = Intent(context, KokpitService::class.java)
+                .putExtra(EXTRA_COLD_BOOT, coldBoot)
+                .putExtra(EXTRA_POWER_ACTION, powerAction)
             runCatching { ContextCompat.startForegroundService(context, intent) }
         }
 

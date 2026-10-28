@@ -45,7 +45,10 @@ class NowPlayingRepository(private val context: Context) {
     private var listening = false
 
     private val callback = object : MediaController.Callback() {
-        override fun onPlaybackStateChanged(state: PlaybackState?) = publish()
+        override fun onPlaybackStateChanged(state: PlaybackState?) {
+            log("state ${stateName(state?.state)}")
+            publish()
+        }
         override fun onMetadataChanged(metadata: MediaMetadata?) = publish()
         override fun onSessionDestroyed() = publish()
     }
@@ -71,7 +74,8 @@ class NowPlayingRepository(private val context: Context) {
     }
 
     fun playPause() {
-        val controller = current ?: return
+        val controller = current ?: return log("kokpit play/pause: no session")
+        log("kokpit play/pause -> ${controller.packageName} (was ${stateName(controller.playbackState?.state)})")
         if (controller.playbackState?.state == PlaybackState.STATE_PLAYING) {
             controller.transportControls.pause()
         } else {
@@ -87,7 +91,19 @@ class NowPlayingRepository(private val context: Context) {
         current?.transportControls?.skipToPrevious()
     }
 
+    private fun log(event: String) = MediaEventLog.shared.add(android.os.SystemClock.elapsedRealtime(), event)
+
+    private fun stateName(state: Int?): String = when (state) {
+        PlaybackState.STATE_PLAYING -> "PLAYING"
+        PlaybackState.STATE_PAUSED -> "PAUSED"
+        PlaybackState.STATE_STOPPED -> "STOPPED"
+        PlaybackState.STATE_BUFFERING -> "BUFFERING"
+        PlaybackState.STATE_NONE, null -> "NONE"
+        else -> "state$state"
+    }
+
     private fun watch(list: List<MediaController>) {
+        log("sessions: " + list.joinToString { "${it.packageName}=${stateName(it.playbackState?.state)}" })
         controllers.forEach { it.unregisterCallback(callback) }
         controllers = list
         list.forEach { it.registerCallback(callback, handler) }

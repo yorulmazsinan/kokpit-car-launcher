@@ -6,6 +6,10 @@ import android.content.Intent
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        KokpitService.start(context, coldBoot = true)
+        if (powerSignalFor(intent.action) != null) {
+            KokpitService.start(context, powerAction = intent.action)
+        } else if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            KokpitService.start(context, coldBoot = true)
+        }
     }
 }

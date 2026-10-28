@@ -43,8 +43,14 @@ private const val START = 150f
 
 /** Centred 0–180 km/h arc speedometer. */
 @Composable
-fun SpeedCard(trip: TripSnapshot, permissionMissing: Boolean, onRequestPermissions: () -> Unit, modifier: Modifier = Modifier) {
-    KokpitCard(modifier) {
+fun SpeedCard(
+    trip: TripSnapshot,
+    permissionMissing: Boolean,
+    onRequestPermissions: () -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenMaps: () -> Unit = {},
+) {
+    KokpitCard(modifier.clickable(enabled = !permissionMissing, onClick = onOpenMaps)) {
         if (permissionMissing) {
             Row(Modifier.fillMaxSize().clickable(onClick = onRequestPermissions), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.GpsNotFixed, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
@@ -69,8 +75,8 @@ fun SpeedCard(trip: TripSnapshot, permissionMissing: Boolean, onRequestPermissio
 
 /** Heading for now: an arrow turned to the direction of travel, its name and degrees. */
 @Composable
-fun CompassCard(trip: TripSnapshot, modifier: Modifier = Modifier) {
-    KokpitCard(modifier.testTag("compass_card")) {
+fun CompassCard(trip: TripSnapshot, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    KokpitCard(modifier.testTag("compass_card").clickable(onClick = onClick)) {
         Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
             val bearing = trip.bearingDeg
             val compass = trip.compass

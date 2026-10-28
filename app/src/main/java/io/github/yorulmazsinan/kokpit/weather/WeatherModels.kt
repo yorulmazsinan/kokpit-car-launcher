@@ -15,8 +15,10 @@ data class Weather(
     val fetchedAtEpochMs: Long,
 )
 
+enum class WeatherProblem { NO_LOCATION, NO_NETWORK }
+
 sealed interface WeatherState {
-    data object NoData : WeatherState
+    data class NoData(val problem: WeatherProblem) : WeatherState
     data class Fresh(val weather: Weather) : WeatherState
     data class Stale(val weather: Weather) : WeatherState
 }

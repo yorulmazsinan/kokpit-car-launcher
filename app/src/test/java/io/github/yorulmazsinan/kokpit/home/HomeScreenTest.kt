@@ -70,8 +70,24 @@ class HomeScreenTest {
 
     @Test
     fun showsInternetNeededWhenNoWeatherData() {
-        show(base.copy(weather = WeatherState.NoData))
+        show(base.copy(weather = WeatherState.NoData(io.github.yorulmazsinan.kokpit.weather.WeatherProblem.NO_NETWORK)))
         compose.onNodeWithText(context.getString(R.string.weather_needs_internet)).assertExists()
+    }
+
+    @Test
+    fun saysWaitingForLocationAndRefreshesOnTap() {
+        var refreshed = false
+        compose.setContent {
+            KokpitTheme {
+                HomeScreen(
+                    base.copy(weather = WeatherState.NoData(io.github.yorulmazsinan.kokpit.weather.WeatherProblem.NO_LOCATION)),
+                    now,
+                    HomeActions(onRefreshWeather = { refreshed = true }),
+                )
+            }
+        }
+        compose.onNodeWithText(context.getString(R.string.weather_waiting_location)).assertExists().performClick()
+        assertTrue(refreshed)
     }
 
     @Test
@@ -118,15 +134,15 @@ class HomeScreenTest {
     @Test
     fun speedCardShowsSmallAverageAboveGauge() {
         show(base)
-        compose.onNodeWithTag("speed_value").assertExists()
-        compose.onNodeWithTag("average_speed").assertExists()
-        compose.onNodeWithText(context.getString(R.string.average_speed_short, 48)).assertExists()
+        compose.onNodeWithTag("speed_value", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("average_speed", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText(context.getString(R.string.average_speed_short, 48), useUnmergedTree = true).assertExists()
     }
 
     @Test
     fun noAverageBeforeItIsKnown() {
         show(base.copy(trip = base.trip.copy(averageKmh = null)))
-        compose.onNodeWithTag("average_speed").assertDoesNotExist()
+        compose.onNodeWithTag("average_speed", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

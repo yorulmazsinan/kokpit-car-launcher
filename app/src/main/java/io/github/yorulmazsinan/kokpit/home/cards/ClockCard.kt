@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 import io.github.yorulmazsinan.kokpit.weather.Weather
 import io.github.yorulmazsinan.kokpit.weather.WeatherCondition
+import io.github.yorulmazsinan.kokpit.weather.WeatherProblem
 import io.github.yorulmazsinan.kokpit.weather.WeatherState
 import java.time.Instant
 import java.time.LocalDateTime
@@ -68,6 +69,8 @@ fun ClockCard(
     recentCalls: List<CallEntry>,
     onOpenPhone: () -> Unit,
     onAssistant: () -> Unit,
+    onRefreshWeather: () -> Unit,
+    onOpenCalendar: () -> Unit,
     onOpenSettings: () -> Unit,
     onRequestPermissions: () -> Unit,
     modifier: Modifier = Modifier,
@@ -75,7 +78,7 @@ fun ClockCard(
     KokpitCard(modifier) {
         Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1f).clickable(onClick = onOpenCalendar)) {
                     StyledClock(now)
                     Spacer(Modifier.height(6.dp))
                     Text(
@@ -102,26 +105,27 @@ fun ClockCard(
                     )
                 }
             }
-            WeatherRow(weather)
+            WeatherRow(weather, onRefreshWeather)
             if (recentCalls.isNotEmpty()) RecentCallsRow(recentCalls, onOpenPhone)
-            CalendarRow(calendar, now, onRequestPermissions)
+            CalendarRow(calendar, now, onRequestPermissions, onOpenCalendar)
         }
     }
 }
 
 @Composable
-private fun WeatherRow(state: WeatherState) {
+private fun WeatherRow(state: WeatherState, onRefresh: () -> Unit) {
     val weather: Weather? = when (state) {
         is WeatherState.Fresh -> state.weather
         is WeatherState.Stale -> state.weather
-        WeatherState.NoData -> null
+        is WeatherState.NoData -> null
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.clickable(onClick = onRefresh), verticalAlignment = Alignment.CenterVertically) {
         if (weather == null) {
             Icon(Icons.Outlined.WifiOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
             Spacer(Modifier.width(12.dp))
+            val problem = (state as? WeatherState.NoData)?.problem
             Text(
-                stringResource(R.string.weather_needs_internet),
+                stringResource(if (problem == WeatherProblem.NO_LOCATION) R.string.weather_waiting_location else R.string.weather_needs_internet),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -147,13 +151,13 @@ private fun WeatherRow(state: WeatherState) {
 }
 
 @Composable
-private fun CalendarRow(state: CalendarState, now: LocalDateTime, onRequestPermissions: () -> Unit) {
+private fun CalendarRow(state: CalendarState, now: LocalDateTime, onRequestPermissions: () -> Unit, onOpen: () -> Unit) {
     when (state) {
         CalendarState.Empty -> Unit
         CalendarState.PermissionMissing -> CalendarLine(Modifier.clickable(onClick = onRequestPermissions)) {
             Text(stringResource(R.string.calendar_permission), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        is CalendarState.Next -> CalendarLine(Modifier) {
+        is CalendarState.Next -> CalendarLine(Modifier.clickable(onClick = onOpen)) {
             val begin = Instant.ofEpochMilli(state.event.beginMs).atZone(ZoneId.systemDefault()).toLocalDateTime()
             val minutes = java.time.Duration.between(now, begin).toMinutes()
             val whenText = if (minutes <= 0) stringResource(R.string.calendar_now)

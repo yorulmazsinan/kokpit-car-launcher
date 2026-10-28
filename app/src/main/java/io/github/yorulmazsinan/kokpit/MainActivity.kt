@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,7 +21,9 @@ import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
 import io.github.yorulmazsinan.kokpit.home.HomeRoute
 import io.github.yorulmazsinan.kokpit.home.HomeUiState
 import io.github.yorulmazsinan.kokpit.home.HomeViewModel
+import io.github.yorulmazsinan.kokpit.headunit.HeadUnitPhone
 import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
+import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.PhoneScreen
 import io.github.yorulmazsinan.kokpit.radio.RADIO_PRESET_SLOTS
@@ -33,7 +36,10 @@ import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
 import io.github.yorulmazsinan.kokpit.system.SystemToolsScreen
 import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +49,7 @@ class MainActivity : ComponentActivity() {
             val home: HomeViewModel = viewModel { HomeViewModel(container) }
             val state by home.state.collectAsStateWithLifecycle()
             KokpitTheme(dark = state.dark, accent = state.accent) {
-                DesignScale { KokpitNavHost(container, state) }
+                KokpitNavHost(container, state)
             }
         }
     }
@@ -71,13 +77,16 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
     val context = LocalContext.current
     NavHost(nav, startDestination = Routes.HOME) {
         composable(Routes.HOME) {
-            HomeRoute(
-                container = container,
-                state = homeState,
-                onOpenDrawer = { nav.navigate(Routes.DRAWER) },
-                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
-                onPickApp = { nav.navigate("picker/${it.name}") },
-            )
+            DesignScale {
+                HomeRoute(
+                    container = container,
+                    state = homeState,
+                    onOpenDrawer = { nav.navigate(Routes.DRAWER) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                    onPickApp = { nav.navigate("picker/${it.name}") },
+                    onOpenScreen = { nav.navigate(it) },
+                )
+            }
         }
         composable(Routes.PICKER) { entry ->
             val slot = DockSlot.valueOf(entry.arguments?.getString("slot").orEmpty())
@@ -112,35 +121,79 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
         composable(Routes.PACKAGE_ACTIVITIES) { entry ->
             PackageActivitiesScreen(entry.arguments?.getString("pkg").orEmpty(), onBack = { nav.popBackStack() })
         }
-        composable(Routes.PHONE) { PhoneScreen(homeState.recentCalls, onBack = { nav.popBackStack() }) }
+        composable(Routes.PHONE) {
+            val device by container.headUnit.btDevice.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { container.headUnit.refresh() }
+            DesignScale {
+                PhoneScreen(
+                    calls = homeState.recentCalls,
+                    deviceName = device,
+                    onBack = { nav.popBackStack() },
+                    vendorDial = { number -> container.headUnit.phone?.dial(number) == true },
+                )
+            }
+        }
         composable(Routes.MUSIC) {
-            BtMusicScreen(
-                state = homeState.media,
-                onBack = { nav.popBackStack() },
-                onPrevious = container.nowPlaying::previous,
-                onPlayPause = container.nowPlaying::playPause,
-                onNext = container.nowPlaying::next,
-                onGrantAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
-            )
+            val vendor = container.headUnit.phone
+            LaunchedEffect(Unit) { withContext(Dispatchers.IO) { vendor?.openMusic() } }
+            fun vendorOr(fallback: () -> Unit, action: HeadUnitPhone.() -> Boolean) {
+                scope.launch { if (withContext(Dispatchers.IO) { vendor?.action() } != true) fallback() }
+            }
+            val playing = (homeState.media as? NowPlayingState.Playing)?.nowPlaying?.isPlaying == true
+            DesignScale {
+                BtMusicScreen(
+                    state = homeState.media,
+                    onBack = { nav.popBackStack() },
+                    onPrevious = { vendorOr(container.nowPlaying::previous) { previous() } },
+                    onPlayPause = { vendorOr(container.nowPlaying::playPause) { if (playing) pause() else play() } },
+                    onNext = { vendorOr(container.nowPlaying::next) { next() } },
+                    onGrantAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
+                )
+            }
         }
         composable(Routes.RADIO) {
             val settings by container.settings.settings.collectAsStateWithLifecycle()
-            RadioScreen(
-                frequency = settings.radioFrequency,
-                presets = settings.radioPresets,
-                onTune = { f -> scope.launch { container.settings.update { it.copy(radioFrequency = f) } } },
-                onSavePreset = {
-                    scope.launch {
-                        container.settings.update {
-                            it.copy(radioPresets = (it.radioPresets - it.radioFrequency + it.radioFrequency).takeLast(RADIO_PRESET_SLOTS))
+            val live by container.headUnit.frequency.collectAsStateWithLifecycle()
+            val radio = container.headUnit.radio
+            LaunchedEffect(Unit) {
+                withContext(Dispatchers.IO) { radio?.open() }
+                while (true) {
+                    container.headUnit.refresh()
+                    delay(1000)
+                }
+            }
+            val frequency = live ?: settings.radioFrequency
+            fun tune(f: Int) {
+                scope.launch {
+                    withContext(Dispatchers.IO) { radio?.tune(f) }
+                    container.settings.update { it.copy(radioFrequency = f) }
+                    container.headUnit.refresh()
+                }
+            }
+            DesignScale {
+                RadioScreen(
+                    frequency = frequency,
+                    presets = settings.radioPresets,
+                    onTune = ::tune,
+                    onSavePreset = {
+                        scope.launch {
+                            container.settings.update {
+                                it.copy(radioPresets = (it.radioPresets - frequency + frequency).takeLast(RADIO_PRESET_SLOTS))
+                            }
                         }
-                    }
-                },
-                onOpenVendorRadio = {
-                    homeState.dock[DockSlot.RADIO]?.let(container.installedApps::launchIntent)?.let { safeStart(context, it) }
-                },
-                onBack = { nav.popBackStack() },
-            )
+                    },
+                    onOpenVendorRadio = {
+                        homeState.dock[DockSlot.RADIO]?.let(container.installedApps::launchIntent)?.let { safeStart(context, it) }
+                    },
+                    onBack = { nav.popBackStack() },
+                    connected = radio != null,
+                    onSeek = { direction ->
+                        scope.launch {
+                            withContext(Dispatchers.IO) { if (direction > 0) radio?.seekUp() else radio?.seekDown() }
+                        }
+                    },
+                )
+            }
         }
         composable(Routes.DIAGNOSTICS) { DiagnosticsScreen(onBack = { nav.popBackStack() }) }
     }

@@ -135,7 +135,7 @@
     <string name="compass_full_sw">Güneybatı</string>
     <string name="compass_full_w">Batı</string>
     <string name="compass_full_nw">Kuzeybatı</string>
-    <string name="settings_preview">Yeni Ekranlar (Deneme)</string>
+    <string name="settings_preview">Kokpit Ekranları</string>
     <string name="settings_preview_help">Kokpit\'in kendi Telefon, Bluetooth Müzik ve Radyo ekranları. Radyo ve Bluetooth kontrolleri bağlanana kadar alttaki düğmeler cihazın kendi ekranlarını açar.</string>
     <string name="phone_title">Telefon</string>
     <string name="phone_recent">Son Aramalar</string>
@@ -154,4 +154,12 @@
     <string name="radio_save">Kaydet</string>
     <string name="average_speed_short">Ort. %1$d km/s</string>
     <string name="saved_to">Kaydedildi: %1$s</string>
+    <string name="weather_waiting_location">Konum bekleniyor — yenilemek için dokunun</string>
+    <string name="settings_use_kokpit_screens">Kokpit\'in Telefon, Müzik ve Radyo Ekranlarını Kullan</string>
+    <string name="settings_use_kokpit_screens_help">Kapalıyken düğmeler cihazın kendi ekranlarını açar.</string>
+    <string name="radio_seek_down">Geriye ara</string>
+    <string name="radio_seek_up">İleriye ara</string>
+    <string name="radio_not_connected">Cihazın radyo servisine bağlanılamadı. Cihazın kendi radyosunu açmak için dokunun.</string>
+    <string name="phone_hang_up">Kapat</string>
+    <string name="phone_not_connected">Telefon bağlı değil</string>
 </resources>

@@ -84,7 +84,10 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="autochips.intent.action.QB_POWERON" />
+                <action android:name="autochips.intent.action.QB_POWEROFF" />
+                <action android:name="comm.power.POWER_ON" />
+                <action android:name="comm.power.POWER_OFF" />
             </intent-filter>
         </receiver>
 

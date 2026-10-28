@@ -135,7 +135,7 @@
     <string name="compass_full_sw">Southwest</string>
     <string name="compass_full_w">West</string>
     <string name="compass_full_nw">Northwest</string>
-    <string name="settings_preview">New Screens (Preview)</string>
+    <string name="settings_preview">Kokpit Screens</string>
     <string name="settings_preview_help">Kokpit\'s own Phone, Bluetooth Music and Radio screens. The dock buttons keep opening the unit\'s screens until radio and Bluetooth controls are connected.</string>
     <string name="phone_title">Phone</string>
     <string name="phone_recent">Recent</string>
@@ -154,4 +154,12 @@
     <string name="radio_save">Save</string>
     <string name="average_speed_short">Avg %1$d km/h</string>
     <string name="saved_to">Saved: %1$s</string>
+    <string name="weather_waiting_location">Waiting for location — tap to retry</string>
+    <string name="settings_use_kokpit_screens">Use Kokpit\'s Phone, Music and Radio</string>
+    <string name="settings_use_kokpit_screens_help">When off, the buttons open the unit\'s own screens.</string>
+    <string name="radio_seek_down">Seek down</string>
+    <string name="radio_seek_up">Seek up</string>
+    <string name="radio_not_connected">The unit\'s radio service isn\'t available. Tap here to open the unit\'s radio.</string>
+    <string name="phone_hang_up">Hang up</string>
+    <string name="phone_not_connected">No phone connected</string>
 </resources>
