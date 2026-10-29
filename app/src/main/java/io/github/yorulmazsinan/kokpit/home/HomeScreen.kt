@@ -21,7 +21,7 @@ import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 import java.time.LocalDateTime
 
 @Composable
-fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
+fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions, showDock: Boolean = true) {
     Column(
         Modifier
             .fillMaxSize()
@@ -63,6 +63,6 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions) {
                 CompassCard(state.trip, Modifier.weight(0.6f).fillMaxWidth(), onClick = actions.onOpenMaps)
             }
         }
-        Dock(actions.onDock, actions.onDockLongPress, appIcons = state.dockIcons)
+        if (showDock) Dock(actions.onDock, actions.onDockLongPress, appIcons = state.dockIcons)
     }
 }

@@ -9,12 +9,13 @@ private const val MIN = 60_000L
 
 class IntroVideoPolicyTest {
     private val videos = listOf(IntroVideo("a", "a.mp4", 1), IntroVideo("b", "b.mp4", 1), IntroVideo("c", "c.mp4", 1))
-    private val on = IntroSettings(mode = IntroMode.SELECTED, selectedId = "b")
+    private val on = IntroSettings(mode = IntroMode.SELECTED, selectedId = "b", everyWake = false)
 
     @Test fun offReturnsNull() = assertNull(pickIntroVideo(IntroSettings(mode = IntroMode.OFF), videos, null, Random(1)))
     @Test fun skipsAfterShortSleep() = assertNull(pickIntroVideo(on, videos, 29 * MIN, Random(1)))
     @Test fun playsAfterLongSleep() = assertEquals("b", pickIntroVideo(on, videos, 31 * MIN, Random(1))?.id)
     @Test fun everyWakeIgnoresSleepLength() = assertEquals("b", pickIntroVideo(on.copy(everyWake = true), videos, 1 * MIN, Random(1))?.id)
+    @Test fun playsOnEveryStartByDefault() = assertEquals("b", pickIntroVideo(IntroSettings(mode = IntroMode.SELECTED, selectedId = "b"), videos, 1 * MIN, Random(1))?.id)
     @Test fun coldBootPlays() = assertEquals("b", pickIntroVideo(on, videos, null, Random(1))?.id)
 
     @Test

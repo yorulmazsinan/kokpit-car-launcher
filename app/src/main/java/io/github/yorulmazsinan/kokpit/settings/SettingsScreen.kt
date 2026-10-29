@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -46,6 +47,9 @@ import kotlinx.coroutines.launch
 private const val DAVX5 = "at.bitfire.davdroid"
 private const val REPO_URL = "https://github.com/yorulmazsinan/kokpit"
 
+/** Choice rows stay compact instead of stretching across the whole screen. */
+private val SEGMENTED_MAX_WIDTH = 640.dp
+
 @Composable
 fun SettingsScreen(
     container: AppContainer,
@@ -69,13 +73,13 @@ fun SettingsScreen(
             item { SectionHeader(stringResource(R.string.settings_appearance)) }
             item {
                 val modes = listOf(ThemeMode.DARK to R.string.theme_dark, ThemeMode.LIGHT to R.string.theme_light, ThemeMode.AUTO to R.string.theme_auto)
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = SEGMENTED_MAX_WIDTH).fillMaxWidth()) {
                     modes.forEachIndexed { i, (mode, label) ->
                         SegmentedButton(
                             selected = settings.themeMode == mode,
                             onClick = { update { it.copy(themeMode = mode) } },
                             shape = SegmentedButtonDefaults.itemShape(i, modes.size),
-                            modifier = Modifier.heightIn(min = Dimens.MinTouch),
+                            modifier = Modifier.heightIn(min = 52.dp),
                         ) { Text(stringResource(label)) }
                     }
                 }
@@ -83,13 +87,13 @@ fun SettingsScreen(
             item { HelpText(stringResource(R.string.theme_auto_help)) }
             item {
                 val accents = ThemeAccent.entries
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = SEGMENTED_MAX_WIDTH).fillMaxWidth()) {
                     accents.forEachIndexed { i, accent ->
                         SegmentedButton(
                             selected = settings.accent == accent,
                             onClick = { update { it.copy(accent = accent) } },
                             shape = SegmentedButtonDefaults.itemShape(i, accents.size),
-                            modifier = Modifier.heightIn(min = Dimens.MinTouch),
+                            modifier = Modifier.heightIn(min = 52.dp),
                         ) { Text(stringResource(accent.label)) }
                     }
                 }

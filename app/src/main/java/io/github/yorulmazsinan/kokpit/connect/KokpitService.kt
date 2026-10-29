@@ -19,12 +19,15 @@ import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.intro.IntroActivity
 import io.github.yorulmazsinan.kokpit.intro.pickIntroVideo
 import kotlin.random.Random
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Head units sleep rather than power off when the ignition goes off. This service turns
- * screen off/on into sleep/wake events and runs the wake-up routine: trip bookkeeping,
- * hotspot connection and the intro video.
+ * Head units sleep rather than power off when the ignition goes off. This service spots the
+ * wake-up three ways (ignition broadcast, restart after being killed, a gap in its own
+ * heartbeat) and runs the wake-up routine once: trip bookkeeping, hotspot and intro video.
  */
 class KokpitService : Service() {
     private val screenReceiver = object : BroadcastReceiver() {
@@ -34,10 +37,16 @@ class KokpitService : Service() {
             val container = (application as KokpitApp).container
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> container.drive.onSleep(now)
-                Intent.ACTION_SCREEN_ON -> container.drive.onWake(now)
+                Intent.ACTION_SCREEN_ON -> {
+                    container.drive.onWake(now)
+                    // The screen comes on with the ignition: check now rather than at the next beat.
+                    beat()
+                }
             }
         }
     }
+
+    private var heartbeat: Job? = null
 
     private val powerReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) = onPower(intent.action)
@@ -69,6 +78,19 @@ class KokpitService : Service() {
             log("restart after sleep")
             onEvent(WakeEvent.Wake(now, sleptFor(sleepAt, now)))
         }
+        heartbeat = (application as KokpitApp).container.scope.launch(Dispatchers.Main) {
+            while (true) {
+                beat()
+                delay(HEARTBEAT_MS)
+            }
+        }
+    }
+
+    private fun beat() {
+        val now = SystemClock.elapsedRealtime()
+        val gap = heartbeatGap(PowerEventLog.beat(this, now), now) ?: return
+        log("wake after ${gap / 1000} s asleep")
+        onEvent(WakeEvent.Wake(now, gap))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -81,6 +103,7 @@ class KokpitService : Service() {
     }
 
     override fun onDestroy() {
+        heartbeat?.cancel()
         unregisterReceiver(screenReceiver)
         unregisterReceiver(powerReceiver)
         super.onDestroy()
@@ -109,6 +132,10 @@ class KokpitService : Service() {
     }
 
     private fun onEvent(event: WakeEvent) {
+        if (event is WakeEvent.Wake) {
+            if (isRepeatWake(lastWakeAt, event.elapsedMs)) return
+            lastWakeAt = event.elapsedMs
+        }
         WakeEvents.emit(event)
         val container = (application as KokpitApp).container
         when (event) {
@@ -126,11 +153,17 @@ class KokpitService : Service() {
         val intro = container.settings.current().intro
         val videos = container.introLibrary.list()
         val video = pickIntroVideo(intro, videos, sleptMs, Random.Default) ?: return
+        if (!introAllowedAt(container.drive.state.value.speedKmh)) {
+            log("intro skipped: moving")
+            return
+        }
         container.settings.update { it.copy(intro = it.intro.copy(lastPlayedIndex = videos.indexOf(video))) }
         startActivity(IntroActivity.intent(this, video.id, intro.withSound, returnHome = true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     companion object {
+        /** Last handled wake-up, shared by every path that reports one. */
+        @Volatile private var lastWakeAt: Long? = null
         const val CHANNEL_ID = "kokpit"
         private const val SERVICE_NOTIFICATION_ID = 1
         private const val EXTRA_COLD_BOOT = "cold_boot"

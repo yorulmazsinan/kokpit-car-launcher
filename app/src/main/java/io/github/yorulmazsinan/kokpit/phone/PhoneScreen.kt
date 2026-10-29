@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,7 +93,7 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
     ScreenScaffold(stringResource(R.string.phone_title), onBack, actions = {
         Text(
             deviceName ?: stringResource(R.string.phone_not_connected),
-            style = MaterialTheme.typography.labelLarge,
+            style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(end = 16.dp),
         )
@@ -110,8 +111,8 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
                                 selected = tab == t,
                                 onClick = { tab = t },
                                 shape = SegmentedButtonDefaults.itemShape(i, PhoneTab.entries.size),
-                                modifier = Modifier.heightIn(min = 48.dp),
-                            ) { Text(stringResource(t.label)) }
+                                modifier = Modifier.heightIn(min = 52.dp),
+                            ) { Text(stringResource(t.label), style = MaterialTheme.typography.titleMedium) }
                         }
                     }
                     Spacer(Modifier.size(8.dp))
@@ -128,10 +129,17 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
                 }
             }
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                PhoneCard(Modifier.fillMaxWidth()) {
+                PhoneCard(Modifier.fillMaxWidth(), padding = 8.dp) {
+                    // Shrinks for long numbers so the newest digits stay visible.
+                    val size = when {
+                        typed.length <= 11 -> 44.sp
+                        typed.length <= 14 -> 36.sp
+                        else -> 28.sp
+                    }
                     Text(
                         typed.ifEmpty { " " },
-                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = KokpitFonts.condensed, letterSpacing = 2.sp),
+                        style = MaterialTheme.typography.displaySmall.copy(fontFamily = KokpitFonts.condensed, fontSize = size, lineHeight = 52.sp, letterSpacing = 2.sp),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth().testTag("dial_display"),
                         maxLines = 1,
@@ -156,7 +164,7 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Call, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.phone_call), color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.phone_call), color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.titleLarge)
                     }
                 }
             }
@@ -165,13 +173,13 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
 }
 
 @Composable
-private fun PhoneCard(modifier: Modifier, content: @Composable () -> Unit) {
+private fun PhoneCard(modifier: Modifier, padding: androidx.compose.ui.unit.Dp = Dimens.CardPadding, content: @Composable () -> Unit) {
     Surface(
         modifier,
         shape = RoundedCornerShape(Dimens.CardRadius),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) { Box(Modifier.padding(Dimens.CardPadding)) { content() } }
+    ) { Box(Modifier.padding(padding)) { content() } }
 }
 
 @Composable
@@ -185,9 +193,9 @@ private fun Key(label: String, modifier: Modifier, onClick: () -> Unit) {
     ) {
         Box(contentAlignment = Alignment.Center) {
             if (label == "⌫") {
-                Icon(Icons.AutoMirrored.Outlined.Backspace, stringResource(R.string.phone_delete), tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.AutoMirrored.Outlined.Backspace, stringResource(R.string.phone_delete), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(28.dp))
             } else {
-                Text(label, style = MaterialTheme.typography.headlineSmall.copy(fontFamily = KokpitFonts.condensed), color = MaterialTheme.colorScheme.onSurface)
+                Text(label, style = MaterialTheme.typography.headlineMedium.copy(fontFamily = KokpitFonts.condensed, fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -221,12 +229,12 @@ private fun ListLine(icon: androidx.compose.ui.graphics.vector.ImageVector, tint
             Modifier.fillMaxWidth().heightIn(min = Dimens.MinTouch).clickable(onClick = onClick).padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+            Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
             Spacer(Modifier.width(14.dp))
-            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            Text(trailing, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+            Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            Text(trailing, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             Spacer(Modifier.width(12.dp))
-            Icon(Icons.Outlined.Call, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+            Icon(Icons.Outlined.Call, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }

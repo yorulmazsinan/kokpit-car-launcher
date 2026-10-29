@@ -15,6 +15,7 @@ import io.github.yorulmazsinan.kokpit.dock.DockRepository
 import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
 import io.github.yorulmazsinan.kokpit.headunit.HeadUnit
+import io.github.yorulmazsinan.kokpit.headunit.VendorModes
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
@@ -54,6 +55,7 @@ class AppContainer(context: Context) {
     val nowPlaying = NowPlayingRepository(appContext)
     val calls = CallLogRepository(appContext, scope)
     val headUnit = HeadUnit(appContext, scope)
+    val vendorModes = VendorModes { headUnit.common }
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
     val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)

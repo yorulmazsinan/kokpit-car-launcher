@@ -2,6 +2,8 @@ package io.github.yorulmazsinan.kokpit.home
 
 import android.content.Context
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -16,6 +18,7 @@ import io.github.yorulmazsinan.kokpit.calls.CallType
 import io.github.yorulmazsinan.kokpit.drive.CompassPoint
 import io.github.yorulmazsinan.kokpit.calendar.UpcomingEvent
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
+import io.github.yorulmazsinan.kokpit.home.cards.Dock
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
@@ -121,6 +124,13 @@ class HomeScreenTest {
             compose.onNodeWithTag("dock_${slot.name}").assertExists().assertHeightIsAtLeast(64.dp)
         }
         compose.onNodeWithTag("dock_${DockSlot.ASSISTANT.name}").assertDoesNotExist()
+    }
+
+    @Test
+    fun onlyTheActiveDockButtonIsLit() {
+        compose.setContent { KokpitTheme { Dock({}, {}, active = DockSlot.PHONE) } }
+        compose.onNodeWithTag("dock_PHONE").assertIsSelected()
+        compose.onNodeWithTag("dock_CARPLAY").assertIsNotSelected()
     }
 
     @Test

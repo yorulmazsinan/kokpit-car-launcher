@@ -60,7 +60,7 @@ class SettingsRepository(
         intro = IntroSettings(
             mode = p[INTRO_MODE]?.let { runCatching { IntroMode.valueOf(it) }.getOrNull() } ?: IntroMode.OFF,
             selectedId = p[INTRO_SELECTED],
-            everyWake = p[INTRO_EVERY_WAKE] ?: false,
+            everyWake = p[INTRO_EVERY_WAKE] ?: true,
             withSound = p[INTRO_SOUND] ?: false,
             lastPlayedIndex = p[INTRO_LAST_INDEX] ?: -1,
         ),
@@ -104,7 +104,8 @@ class SettingsRepository(
         val AUTO_CARPLAY = booleanPreferencesKey("auto_carplay_usb")
         val INTRO_MODE = stringPreferencesKey("intro_mode")
         val INTRO_SELECTED = stringPreferencesKey("intro_selected")
-        val INTRO_EVERY_WAKE = booleanPreferencesKey("intro_every_wake")
+        // v2: the default became "every start"; the old key held an untouched false for everyone.
+        val INTRO_EVERY_WAKE = booleanPreferencesKey("intro_every_wake_v2")
         val INTRO_SOUND = booleanPreferencesKey("intro_sound")
         val INTRO_LAST_INDEX = intPreferencesKey("intro_last_index")
     }

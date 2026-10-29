@@ -27,17 +27,14 @@ private val RUNTIME_PERMISSIONS = arrayOf(
     Manifest.permission.READ_CALL_LOG,
 )
 
-/** Dock slots Kokpit has its own screens for (navigation routes). */
-private val KOKPIT_SCREENS = mapOf(DockSlot.PHONE to "phone", DockSlot.BLUETOOTH to "music", DockSlot.RADIO to "radio")
-
 @Composable
 fun HomeRoute(
     container: AppContainer,
     state: HomeUiState,
-    onOpenDrawer: () -> Unit,
     onOpenSettings: () -> Unit,
     onPickApp: (DockSlot) -> Unit,
-    onOpenScreen: (String) -> Unit = {},
+    onDock: (DockSlot) -> Unit,
+    onDockLongPress: (DockSlot) -> Unit,
 ) {
     val context = LocalContext.current
     val now by produceState(LocalDateTime.now()) {
@@ -75,15 +72,8 @@ fun HomeRoute(
         state = state,
         now = now,
         actions = HomeActions(
-            onDock = { slot ->
-                val ownScreen = KOKPIT_SCREENS[slot]
-                when {
-                    slot == DockSlot.APPS -> onOpenDrawer()
-                    ownScreen != null && container.settings.settings.value.useKokpitScreens -> onOpenScreen(ownScreen)
-                    !launchSlot(slot) -> onPickApp(slot)
-                }
-            },
-            onDockLongPress = { slot -> if (slot == DockSlot.APPS) onOpenSettings() else onPickApp(slot) },
+            onDock = onDock,
+            onDockLongPress = onDockLongPress,
             onOpenSettings = onOpenSettings,
             onOpenCalendar = {
                 safeStart(context, Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR))
@@ -101,5 +91,7 @@ fun HomeRoute(
             onRequestPermissions = { permissionLauncher.launch(RUNTIME_PERMISSIONS) },
             onGrantMediaAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
         ),
+        // The dock lives in the app shell so it stays put across Phone, Music and Radio.
+        showDock = false,
     )
 }

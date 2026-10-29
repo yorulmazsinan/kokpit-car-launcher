@@ -16,27 +16,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Recent calls from Android's call log. Works when the head unit's Bluetooth app records
- * calls there; otherwise the list stays empty and the home screen hides the row.
+ * Recent calls: the head unit's own Bluetooth call history first ([VendorCallLog]), then
+ * Android's call log. When neither has anything the home screen hides the row.
  */
 class CallLogRepository(private val context: Context, private val scope: CoroutineScope) {
+    /** Every known call, newest first; the home screen narrows it with [recentCalls]. */
     private val _calls = MutableStateFlow<List<CallEntry>>(emptyList())
     val calls: StateFlow<List<CallEntry>> = _calls.asStateFlow()
     private var observing = false
 
     fun refresh() {
-        if (context.checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) return
+        val androidLog = context.checkSelfPermission(Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
         if (!observing) {
-            observing = runCatching {
-                context.contentResolver.registerContentObserver(
-                    CallLog.Calls.CONTENT_URI, true,
-                    object : ContentObserver(Handler(Looper.getMainLooper())) {
-                        override fun onChange(selfChange: Boolean) = refresh()
-                    },
-                )
-            }.isSuccess
+            val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+                override fun onChange(selfChange: Boolean) = refresh()
+            }
+            val uris = listOfNotNull(VendorCallLog.uri, CallLog.Calls.CONTENT_URI.takeIf { androidLog })
+            observing = uris.map { uri -> runCatching { context.contentResolver.registerContentObserver(uri, true, observer) }.isSuccess }.any { it }
         }
-        scope.launch { _calls.value = recentCalls(withContext(Dispatchers.IO) { query() }) }
+        scope.launch {
+            val all = withContext(Dispatchers.IO) { VendorCallLog.query(context) + if (androidLog) query() else emptyList() }
+            _calls.value = all.sortedByDescending { it.timeMs }
+        }
     }
 
     private fun query(): List<CallEntry> = runCatching {

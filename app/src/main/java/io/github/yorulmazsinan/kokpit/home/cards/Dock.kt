@@ -33,27 +33,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 
 @Composable
-fun Dock(onClick: (DockSlot) -> Unit, onLongClick: (DockSlot) -> Unit, modifier: Modifier = Modifier, appIcons: Map<DockSlot, ImageBitmap> = emptyMap()) {
+fun Dock(
+    onClick: (DockSlot) -> Unit,
+    onLongClick: (DockSlot) -> Unit,
+    modifier: Modifier = Modifier,
+    appIcons: Map<DockSlot, ImageBitmap> = emptyMap(),
+    active: DockSlot? = null,
+) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         DockSlot.entries.filter { it.inDock }.forEach { slot ->
-            DockButton(slot, appIcons[slot], { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
+            DockButton(slot, appIcons[slot], slot == active, { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
-    val highlighted = slot == DockSlot.CARPLAY
+private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, highlighted: Boolean, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
     Surface(
         modifier
             .heightIn(min = 76.dp)
-            .testTag("dock_${slot.name}"),
+            .testTag("dock_${slot.name}")
+            .semantics { selected = highlighted },
         shape = RoundedCornerShape(10.dp),
         color = if (highlighted) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         border = if (highlighted) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -65,19 +73,19 @@ private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, onClick: () -> Uni
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (appIcon != null) {
-                Image(appIcon, null, Modifier.size(30.dp).clip(RoundedCornerShape(7.dp)).testTag("dock_icon_app_${slot.name}"))
+                Image(appIcon, null, Modifier.size(32.dp).clip(RoundedCornerShape(7.dp)).testTag("dock_icon_app_${slot.name}"))
             } else {
                 Icon(
                     slot.icon(),
                     null,
                     tint = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(30.dp),
+                    modifier = Modifier.size(32.dp),
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(slot.label),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.titleSmall,
                 color = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
             )

@@ -7,6 +7,7 @@ object PowerEventLog {
     private const val PREFS = "power_events"
     private const val KEY_LINES = "lines"
     private const val KEY_SLEEP_AT = "sleep_at"
+    private const val KEY_BEAT = "heartbeat"
     private const val MAX_LINES = 30
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -28,5 +29,13 @@ object PowerEventLog {
         val value = p.getLong(KEY_SLEEP_AT, 0L)
         p.edit().remove(KEY_SLEEP_AT).commit()
         return value
+    }
+
+    /** Stores this beat and returns the previous one. */
+    fun beat(context: Context, elapsedMs: Long): Long? {
+        val p = prefs(context)
+        val last = if (p.contains(KEY_BEAT)) p.getLong(KEY_BEAT, 0L) else null
+        p.edit().putLong(KEY_BEAT, elapsedMs).apply()
+        return last
     }
 }

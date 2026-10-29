@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -103,7 +104,7 @@ fun IntroSettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     IntroMode.SEQUENTIAL to R.string.intro_mode_sequential,
                     IntroMode.RANDOM to R.string.intro_mode_random,
                 )
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = 760.dp).fillMaxWidth()) {
                     modes.forEachIndexed { i, (mode, label) ->
                         SegmentedButton(
                             selected = intro.mode == mode,

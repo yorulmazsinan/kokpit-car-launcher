@@ -1,45 +1,54 @@
 package io.github.yorulmazsinan.kokpit
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import io.github.yorulmazsinan.kokpit.dock.AppPickerScreen
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
+import io.github.yorulmazsinan.kokpit.headunit.HeadUnitPhone
+import io.github.yorulmazsinan.kokpit.headunit.VendorSource
 import io.github.yorulmazsinan.kokpit.home.HomeRoute
 import io.github.yorulmazsinan.kokpit.home.HomeUiState
 import io.github.yorulmazsinan.kokpit.home.HomeViewModel
-import io.github.yorulmazsinan.kokpit.headunit.HeadUnitPhone
+import io.github.yorulmazsinan.kokpit.home.cards.Dock
 import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.PhoneScreen
 import io.github.yorulmazsinan.kokpit.radio.RADIO_PRESET_SLOTS
 import io.github.yorulmazsinan.kokpit.radio.RadioScreen
-import io.github.yorulmazsinan.kokpit.system.safeStart
 import io.github.yorulmazsinan.kokpit.settings.SettingsScreen
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
 import io.github.yorulmazsinan.kokpit.system.PackageActivitiesScreen
 import io.github.yorulmazsinan.kokpit.system.SystemToolsScreen
+import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.DockedLayout
 import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +58,16 @@ class MainActivity : ComponentActivity() {
             val home: HomeViewModel = viewModel { HomeViewModel(container) }
             val state by home.state.collectAsStateWithLifecycle()
             KokpitTheme(dark = state.dark, accent = state.accent) {
-                KokpitNavHost(container, state)
+                // One scale for every screen, so sizes match wherever you go.
+                DesignScale { KokpitShell(container, state) }
             }
+        }
+    }
+
+    companion object {
+        /** Back to Kokpit after a vendor screen took over (its audio source keeps playing). */
+        fun bringToFront(context: Context) {
+            safeStart(context, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT))
         }
     }
 }
@@ -70,23 +87,87 @@ object Routes {
     const val DIAGNOSTICS = "diagnostics"
 }
 
+/** Dock slots with a Kokpit screen; those screens and home keep the dock on the bottom. */
+private val KOKPIT_SCREENS = mapOf(DockSlot.PHONE to Routes.PHONE, DockSlot.BLUETOOTH to Routes.MUSIC, DockSlot.RADIO to Routes.RADIO)
+private val DOCKED_ROUTES = setOf(Routes.HOME) + KOKPIT_SCREENS.values
+
 @Composable
-private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
+private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
     val nav = rememberNavController()
+    val context = LocalContext.current
+    val route = nav.currentBackStackEntryAsState().value?.destination?.route
+    val active = KOKPIT_SCREENS.entries.firstOrNull { it.value == route }?.key
+
+    fun launchSlot(slot: DockSlot): Boolean {
+        val intent = homeState.dock[slot]?.let(container.installedApps::launchIntent) ?: return false
+        return safeStart(context, intent)
+    }
+
+    fun openSlot(slot: DockSlot) {
+        val screen = KOKPIT_SCREENS[slot]
+        when {
+            slot == DockSlot.APPS -> nav.navigate(Routes.DRAWER)
+            // Tapping the lit button again goes home.
+            slot == active -> nav.popBackStack(Routes.HOME, inclusive = false)
+            screen != null && container.settings.settings.value.useKokpitScreens -> nav.navigate(screen) {
+                popUpTo(Routes.HOME)
+                launchSingleTop = true
+            }
+            !launchSlot(slot) -> nav.navigate("picker/${slot.name}")
+        }
+    }
+
+    fun longPressSlot(slot: DockSlot) {
+        if (slot == DockSlot.APPS) nav.navigate(Routes.SETTINGS) else nav.navigate("picker/${slot.name}")
+    }
+
+    val dock: (@Composable () -> Unit)? = if (route in DOCKED_ROUTES) {
+        { Dock(::openSlot, ::longPressSlot, appIcons = homeState.dockIcons, active = active) }
+    } else {
+        null
+    }
+    DockedLayout(dock) { KokpitNavHost(nav, container, homeState, ::openSlot, ::longPressSlot) }
+}
+
+/**
+ * Opens the vendor screen for [source] when needed (that is what switches the audio source)
+ * and brings Kokpit straight back once it has taken over.
+ */
+@Composable
+private fun SwitchVendorSource(container: AppContainer, source: VendorSource, open: () -> Boolean?) {
+    val context = LocalContext.current
+    val lifecycle = (context as ComponentActivity).lifecycle
+    LaunchedEffect(source) {
+        val modes = container.vendorModes
+        if (!withContext(Dispatchers.IO) { modes.needsOpen(source) }) return@LaunchedEffect
+        if (withContext(Dispatchers.IO) { open() } != true) return@LaunchedEffect
+        val left = withTimeoutOrNull(3_000) { lifecycle.currentStateFlow.first { !it.isAtLeast(Lifecycle.State.RESUMED) } }
+        if (left != null) MainActivity.bringToFront(context)
+        delay(1_500)
+        withContext(Dispatchers.IO) { modes.learn(source) }
+    }
+}
+
+@Composable
+private fun KokpitNavHost(
+    nav: NavHostController,
+    container: AppContainer,
+    homeState: HomeUiState,
+    onDock: (DockSlot) -> Unit,
+    onDockLongPress: (DockSlot) -> Unit,
+) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     NavHost(nav, startDestination = Routes.HOME) {
         composable(Routes.HOME) {
-            DesignScale {
-                HomeRoute(
-                    container = container,
-                    state = homeState,
-                    onOpenDrawer = { nav.navigate(Routes.DRAWER) },
-                    onOpenSettings = { nav.navigate(Routes.SETTINGS) },
-                    onPickApp = { nav.navigate("picker/${it.name}") },
-                    onOpenScreen = { nav.navigate(it) },
-                )
-            }
+            HomeRoute(
+                container = container,
+                state = homeState,
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onPickApp = { nav.navigate("picker/${it.name}") },
+                onDock = onDock,
+                onDockLongPress = onDockLongPress,
+            )
         }
         composable(Routes.PICKER) { entry ->
             val slot = DockSlot.valueOf(entry.arguments?.getString("slot").orEmpty())
@@ -123,40 +204,40 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
         }
         composable(Routes.PHONE) {
             val device by container.headUnit.btDevice.collectAsStateWithLifecycle()
-            LaunchedEffect(Unit) { container.headUnit.refresh() }
-            DesignScale {
-                PhoneScreen(
-                    calls = homeState.recentCalls,
-                    deviceName = device,
-                    onBack = { nav.popBackStack() },
-                    vendorDial = { number -> container.headUnit.phone?.dial(number) == true },
-                )
+            val calls by container.calls.calls.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) {
+                container.headUnit.refresh()
+                container.calls.refresh()
             }
+            PhoneScreen(
+                calls = calls,
+                deviceName = device,
+                onBack = { nav.popBackStack() },
+                vendorDial = { number -> container.headUnit.phone?.dial(number) == true },
+            )
         }
         composable(Routes.MUSIC) {
             val vendor = container.headUnit.phone
-            LaunchedEffect(Unit) { withContext(Dispatchers.IO) { vendor?.openMusic() } }
+            SwitchVendorSource(container, VendorSource.BT_MUSIC) { vendor?.openMusic() }
             fun vendorOr(fallback: () -> Unit, action: HeadUnitPhone.() -> Boolean) {
                 scope.launch { if (withContext(Dispatchers.IO) { vendor?.action() } != true) fallback() }
             }
             val playing = (homeState.media as? NowPlayingState.Playing)?.nowPlaying?.isPlaying == true
-            DesignScale {
-                BtMusicScreen(
-                    state = homeState.media,
-                    onBack = { nav.popBackStack() },
-                    onPrevious = { vendorOr(container.nowPlaying::previous) { previous() } },
-                    onPlayPause = { vendorOr(container.nowPlaying::playPause) { if (playing) pause() else play() } },
-                    onNext = { vendorOr(container.nowPlaying::next) { next() } },
-                    onGrantAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
-                )
-            }
+            BtMusicScreen(
+                state = homeState.media,
+                onBack = { nav.popBackStack() },
+                onPrevious = { vendorOr(container.nowPlaying::previous) { previous() } },
+                onPlayPause = { vendorOr(container.nowPlaying::playPause) { if (playing) pause() else play() } },
+                onNext = { vendorOr(container.nowPlaying::next) { next() } },
+                onGrantAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
+            )
         }
         composable(Routes.RADIO) {
             val settings by container.settings.settings.collectAsStateWithLifecycle()
             val live by container.headUnit.frequency.collectAsStateWithLifecycle()
             val radio = container.headUnit.radio
+            SwitchVendorSource(container, VendorSource.RADIO) { radio?.open() }
             LaunchedEffect(Unit) {
-                withContext(Dispatchers.IO) { radio?.open() }
                 while (true) {
                     container.headUnit.refresh()
                     delay(1000)
@@ -170,32 +251,29 @@ private fun KokpitNavHost(container: AppContainer, homeState: HomeUiState) {
                     container.headUnit.refresh()
                 }
             }
-            DesignScale {
-                RadioScreen(
-                    frequency = frequency,
-                    presets = settings.radioPresets,
-                    onTune = ::tune,
-                    onSavePreset = {
-                        scope.launch {
-                            container.settings.update {
-                                it.copy(radioPresets = (it.radioPresets - frequency + frequency).takeLast(RADIO_PRESET_SLOTS))
-                            }
+            RadioScreen(
+                frequency = frequency,
+                presets = settings.radioPresets,
+                onTune = ::tune,
+                onSavePreset = {
+                    scope.launch {
+                        container.settings.update {
+                            it.copy(radioPresets = (it.radioPresets - frequency + frequency).takeLast(RADIO_PRESET_SLOTS))
                         }
-                    },
-                    onOpenVendorRadio = {
-                        homeState.dock[DockSlot.RADIO]?.let(container.installedApps::launchIntent)?.let { safeStart(context, it) }
-                    },
-                    onBack = { nav.popBackStack() },
-                    connected = radio != null,
-                    onSeek = { direction ->
-                        scope.launch {
-                            withContext(Dispatchers.IO) { if (direction > 0) radio?.seekUp() else radio?.seekDown() }
-                        }
-                    },
-                )
-            }
+                    }
+                },
+                onOpenVendorRadio = {
+                    homeState.dock[DockSlot.RADIO]?.let(container.installedApps::launchIntent)?.let { safeStart(context, it) }
+                },
+                onBack = { nav.popBackStack() },
+                connected = radio != null,
+                onSeek = { direction ->
+                    scope.launch {
+                        withContext(Dispatchers.IO) { if (direction > 0) radio?.seekUp() else radio?.seekDown() }
+                    }
+                },
+            )
         }
         composable(Routes.DIAGNOSTICS) { DiagnosticsScreen(onBack = { nav.popBackStack() }) }
     }
 }
-

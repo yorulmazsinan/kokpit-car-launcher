@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import io.github.yorulmazsinan.kokpit.calls.VendorCallLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,7 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
             "services common=${c != null} radio=${radio != null} bt=${phone != null} car=${k != null}",
             "frequency=${c?.frequencyTenths()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
             "speed=${c?.speed()} temp=${c?.temperature()} brake=${c?.brakeState()} reverse=${c?.reverseState()} night=${c?.nightMode()} mode=${c?.workMode()}",
+            "callLog uri=${VendorCallLog.uri} rows=${VendorCallLog.query(context).size}",
             "can: km=${k?.totalKilometres()} fuel=${k?.fuelLeft()} speed=${k?.speed()} left=${k?.leftSignal()} right=${k?.rightSignal()} hazard=${k?.hazard()}",
         )
     }

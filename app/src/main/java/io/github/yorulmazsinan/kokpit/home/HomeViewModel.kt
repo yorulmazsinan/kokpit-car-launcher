@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import androidx.lifecycle.viewModelScope
 import io.github.yorulmazsinan.kokpit.AppContainer
+import io.github.yorulmazsinan.kokpit.calls.recentCalls
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
@@ -62,7 +63,7 @@ class HomeViewModel(private val container: AppContainer) : ViewModel() {
             dock = dock,
             dark = resolveDark(mode, now, weather?.sunriseLocal, weather?.sunsetLocal),
             accent = accent,
-            recentCalls = calls,
+            recentCalls = recentCalls(calls),
             dockIcons = icons(dock),
         )
     }.stateIn(
