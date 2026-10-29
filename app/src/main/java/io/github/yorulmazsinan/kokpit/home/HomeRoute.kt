@@ -80,7 +80,7 @@ fun HomeRoute(
             onRefreshWeather = { container.scope.launch { container.weather.refresh() } },
             // An app picked for the assistant slot wins; otherwise Kokpit's own assistant.
             onAssistant = { if (!launchSlot(DockSlot.ASSISTANT)) container.assistant.open() },
-            onPlayPause = container.nowPlaying::playPause,
+            onPlayPause = container::playPause,
             onNext = container.nowPlaying::next,
             onPrevious = container.nowPlaying::previous,
             onRequestPermissions = { permissionLauncher.launch(RUNTIME_PERMISSIONS) },

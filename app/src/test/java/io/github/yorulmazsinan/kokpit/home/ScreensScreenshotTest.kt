@@ -48,7 +48,7 @@ import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(qualifiers = "tr-w683dp-h360dp-land-hdpi")
+@Config(qualifiers = "tr-w683dp-h400dp-land-hdpi")
 class ScreensScreenshotTest {
     @get:Rule val compose = createComposeRule()
 

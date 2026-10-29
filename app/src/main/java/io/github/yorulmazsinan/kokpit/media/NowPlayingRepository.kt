@@ -44,6 +44,9 @@ class NowPlayingRepository(private val context: Context) {
     private var current: MediaController? = null
     private var listening = false
 
+    /** A truer playing state for a session's package (the head unit's, for Bluetooth); null keeps the session's own. */
+    var playingOverride: (String) -> Boolean? = { null }
+
     private val callback = object : MediaController.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackState?) {
             log("state ${stateName(state?.state)}")
@@ -72,6 +75,12 @@ class NowPlayingRepository(private val context: Context) {
         }
         watch(runCatching { manager.getActiveSessions(listenerComponent) }.getOrDefault(emptyList()))
     }
+
+    /** The package of the session shown, if any. */
+    fun currentPackage(): String? = current?.packageName
+
+    /** Re-reads the sessions, e.g. after a play/pause the session itself may not report. */
+    fun refresh() = handler.post { publish() }
 
     fun playPause() {
         val controller = current ?: return log("kokpit play/pause: no session")
@@ -116,7 +125,10 @@ class NowPlayingRepository(private val context: Context) {
     }
 
     private fun publishUnsafe() {
-        val snapshots = controllers.map { it to it.snapshot() }
+        val snapshots = controllers.map { controller ->
+            val snapshot = controller.snapshot()
+            controller to (playingOverride(snapshot.packageName)?.let { snapshot.copy(isPlaying = it) } ?: snapshot)
+        }
         val chosen = selectSession(snapshots.map { it.second })
         current = snapshots.firstOrNull { it.second == chosen }?.first
         val controller = current

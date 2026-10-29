@@ -8,6 +8,7 @@ import io.github.yorulmazsinan.kokpit.calendar.CalendarState
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.dock.parseDockTarget
 import io.github.yorulmazsinan.kokpit.drive.CompassPoint
+import io.github.yorulmazsinan.kokpit.headunit.usesHeadUnitMusic
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.phone.Contact
 import io.github.yorulmazsinan.kokpit.phone.loadContacts
@@ -82,10 +83,13 @@ class DeviceActions(
         }
         val now = container.nowPlaying.state.value as? NowPlayingState.Playing
         val vendor = container.headUnit.phone
-        val playing = now?.nowPlaying?.isPlaying == true
+        // Bluetooth music: the head unit knows whether it is really playing; the phone's session does not.
+        val headUnitPlaying = if (usesHeadUnitMusic(container.nowPlaying.currentPackage())) container.btMusic.isPlaying() else null
+        val playing = headUnitPlaying ?: (now?.nowPlaying?.isPlaying == true)
+        val viaHeadUnit = headUnitPlaying != null || now == null
         when (action) {
-            "play" -> if (!playing) { if (now != null) container.nowPlaying.playPause() else vendor?.play() ?: return "Error: nothing to play." }
-            "pause" -> if (playing) container.nowPlaying.playPause() else vendor?.pause()
+            "play" -> if (!playing) { if (viaHeadUnit) vendor?.play() ?: return "Error: nothing to play." else container.nowPlaying.playPause() }
+            "pause" -> if (playing) { if (viaHeadUnit) vendor?.pause() else container.nowPlaying.playPause() }
             "next" -> if (now != null) container.nowPlaying.next() else vendor?.next() ?: return "Error: nothing is playing."
             "previous" -> if (now != null) container.nowPlaying.previous() else vendor?.previous() ?: return "Error: nothing is playing."
             else -> return "Error: unknown action $action."

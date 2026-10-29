@@ -43,7 +43,6 @@ import io.github.yorulmazsinan.kokpit.home.HomeUiState
 import io.github.yorulmazsinan.kokpit.home.HomeViewModel
 import io.github.yorulmazsinan.kokpit.home.cards.Dock
 import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
-import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.PhoneScreen
 import io.github.yorulmazsinan.kokpit.player.PlayerScreen
@@ -205,7 +204,12 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
  * and brings Kokpit straight back once it has taken over.
  */
 @Composable
-private fun SwitchVendorSource(container: AppContainer, source: VendorSource, open: () -> Boolean?) {
+private fun SwitchVendorSource(
+    container: AppContainer,
+    source: VendorSource,
+    afterSwitch: suspend () -> Unit = {},
+    open: () -> Boolean?,
+) {
     val context = LocalContext.current
     val lifecycle = (context as ComponentActivity).lifecycle
     LaunchedEffect(source) {
@@ -216,6 +220,7 @@ private fun SwitchVendorSource(container: AppContainer, source: VendorSource, op
         if (left != null) MainActivity.bringToFront(context)
         delay(1_500)
         withContext(Dispatchers.IO) { modes.learn(source) }
+        withContext(Dispatchers.IO) { afterSwitch() }
     }
 }
 
@@ -300,16 +305,22 @@ private fun KokpitNavHost(
         }
         composable(Routes.MUSIC) {
             val vendor = container.headUnit.phone
-            SwitchVendorSource(container, VendorSource.BT_MUSIC) { vendor?.openMusic() }
+            SwitchVendorSource(container, VendorSource.BT_MUSIC, afterSwitch = container.btMusic::resumeAfterSwitch) { vendor?.openMusic() }
+            // The Bluetooth session's own state goes stale; re-read the head unit's while Music is open.
+            LaunchedEffect(Unit) {
+                while (true) {
+                    container.nowPlaying.refresh()
+                    delay(1000)
+                }
+            }
             fun vendorOr(fallback: () -> Unit, action: HeadUnitPhone.() -> Boolean) {
                 scope.launch { if (withContext(Dispatchers.IO) { vendor?.action() } != true) fallback() }
             }
-            val playing = (homeState.media as? NowPlayingState.Playing)?.nowPlaying?.isPlaying == true
             BtMusicScreen(
                 state = homeState.media,
                 onBack = { nav.popBackStack() },
                 onPrevious = { vendorOr(container.nowPlaying::previous) { previous() } },
-                onPlayPause = { vendorOr(container.nowPlaying::playPause) { if (playing) pause() else play() } },
+                onPlayPause = container::playPause,
                 onNext = { vendorOr(container.nowPlaying::next) { next() } },
                 onGrantAccess = { safeStart(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
             )

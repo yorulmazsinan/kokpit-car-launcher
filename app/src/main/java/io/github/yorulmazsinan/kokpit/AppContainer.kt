@@ -19,7 +19,10 @@ import io.github.yorulmazsinan.kokpit.connect.WifiAutoConnector
 import io.github.yorulmazsinan.kokpit.dock.DockRepository
 import io.github.yorulmazsinan.kokpit.drawer.InstalledApps
 import io.github.yorulmazsinan.kokpit.drive.DriveRepository
+import io.github.yorulmazsinan.kokpit.headunit.BLUETOOTH_SESSION_PACKAGE
+import io.github.yorulmazsinan.kokpit.headunit.BtMusic
 import io.github.yorulmazsinan.kokpit.headunit.HeadUnit
+import io.github.yorulmazsinan.kokpit.headunit.usesHeadUnitMusic
 import io.github.yorulmazsinan.kokpit.headunit.VendorModes
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
@@ -41,6 +44,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.File
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 private val Context.weatherStore by preferencesDataStore("weather")
@@ -61,6 +65,7 @@ class AppContainer(context: Context) {
     val calls = CallLogRepository(appContext, scope)
     val headUnit = HeadUnit(appContext, scope)
     val vendorModes = VendorModes { headUnit.common }
+    val btMusic = BtMusic { headUnit.phone }
     val callMonitor = CallMonitor(appContext, scope, headUnit, calls)
     val usbPlayer by lazy { UsbPlayer(appContext) }
 
@@ -80,7 +85,17 @@ class AppContainer(context: Context) {
     /** Runtime permissions are asked for once per process; afterwards the cards offer tap-to-grant. */
     var permissionsRequested = false
 
+    /** Play/pause for home and Music: Bluetooth music by the head unit's own state, anything else by its session. */
+    fun playPause() {
+        scope.launch {
+            val viaHeadUnit = usesHeadUnitMusic(nowPlaying.currentPackage()) &&
+                withContext(Dispatchers.IO) { btMusic.toggle() }
+            if (viaHeadUnit) nowPlaying.refresh() else nowPlaying.playPause()
+        }
+    }
+
     fun start() {
+        nowPlaying.playingOverride = { pkg -> if (pkg == BLUETOOTH_SESSION_PACKAGE) btMusic.isPlaying() else null }
         // The process may have been (re)started while the unit was awake: run the wake-up connect now.
         wifi.reconnect(scope)
         scope.launch { dock.refreshInstalled() }
