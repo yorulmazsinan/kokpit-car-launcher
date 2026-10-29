@@ -14,8 +14,8 @@ android {
         applicationId = "io.github.yorulmazsinan.kokpit"
         minSdk = 27
         targetSdk = 35
-        versionCode = 10
-        versionName = "0.4.0"
+        versionCode = 11
+        versionName = "0.5.0"
     }
 
     val keystoreFile = listOf(
@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.ui)
+    implementation(libs.media3.session)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)

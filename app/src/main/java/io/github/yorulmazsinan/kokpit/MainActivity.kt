@@ -11,6 +11,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -19,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import io.github.yorulmazsinan.kokpit.calls.CallBar
 import io.github.yorulmazsinan.kokpit.dock.AppPickerScreen
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
@@ -32,8 +36,10 @@ import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
 import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.PhoneScreen
+import io.github.yorulmazsinan.kokpit.player.PlayerScreen
 import io.github.yorulmazsinan.kokpit.radio.RADIO_PRESET_SLOTS
 import io.github.yorulmazsinan.kokpit.radio.RadioScreen
+import io.github.yorulmazsinan.kokpit.settings.QuickSettingsScreen
 import io.github.yorulmazsinan.kokpit.settings.SettingsScreen
 import io.github.yorulmazsinan.kokpit.system.ActivityExplorerScreen
 import io.github.yorulmazsinan.kokpit.system.DiagnosticsScreen
@@ -54,6 +60,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = (application as KokpitApp).container
+        hideSystemBars()
         setContent {
             val home: HomeViewModel = viewModel { HomeViewModel(container) }
             val state by home.state.collectAsStateWithLifecycle()
@@ -61,6 +68,19 @@ class MainActivity : ComponentActivity() {
                 // One scale for every screen, so sizes match wherever you go.
                 DesignScale { KokpitShell(container, state) }
             }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) hideSystemBars()
+    }
+
+    /** Kokpit owns the whole screen; a swipe from the edge brings the bars back for a moment. */
+    private fun hideSystemBars() {
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.systemBars())
         }
     }
 
@@ -85,11 +105,13 @@ object Routes {
     const val EXPLORER = "explorer"
     const val PACKAGE_ACTIVITIES = "explorer/{pkg}"
     const val DIAGNOSTICS = "diagnostics"
+    const val QUICK = "quick"
+    const val PLAYER = "player"
 }
 
 /** Dock slots with a Kokpit screen; those screens and home keep the dock on the bottom. */
 private val KOKPIT_SCREENS = mapOf(DockSlot.PHONE to Routes.PHONE, DockSlot.BLUETOOTH to Routes.MUSIC, DockSlot.RADIO to Routes.RADIO)
-private val DOCKED_ROUTES = setOf(Routes.HOME) + KOKPIT_SCREENS.values
+private val DOCKED_ROUTES = setOf(Routes.HOME, Routes.PLAYER) + KOKPIT_SCREENS.values
 
 @Composable
 private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
@@ -126,7 +148,18 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
     } else {
         null
     }
-    DockedLayout(dock) { KokpitNavHost(nav, container, homeState, ::openSlot, ::longPressSlot) }
+    val call by container.callMonitor.call.collectAsStateWithLifecycle()
+    val banner: (@Composable () -> Unit)? = call?.let { active ->
+        {
+            CallBar(
+                active,
+                onAnswer = { container.callMonitor.answer() },
+                onHangUp = { container.callMonitor.hangUp() },
+                onOpen = { if (route != Routes.PHONE) nav.navigate(Routes.PHONE) { launchSingleTop = true } },
+            )
+        }
+    }
+    DockedLayout(dock, banner) { KokpitNavHost(nav, container, homeState, ::openSlot, ::longPressSlot) }
 }
 
 /**
@@ -163,7 +196,7 @@ private fun KokpitNavHost(
             HomeRoute(
                 container = container,
                 state = homeState,
-                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onOpenSettings = { nav.navigate(Routes.QUICK) },
                 onPickApp = { nav.navigate("picker/${it.name}") },
                 onDock = onDock,
                 onDockLongPress = onDockLongPress,
@@ -176,7 +209,18 @@ private fun KokpitNavHost(
                 nav.popBackStack()
             }
         }
-        composable(Routes.DRAWER) { AppDrawerScreen(container.installedApps, onBack = { nav.popBackStack() }, onOpenSettings = { nav.navigate(Routes.SETTINGS) }) }
+        composable(Routes.DRAWER) {
+            AppDrawerScreen(
+                container.installedApps,
+                onBack = { nav.popBackStack() },
+                onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                onOpenPlayer = { nav.navigate(Routes.PLAYER) },
+            )
+        }
+        composable(Routes.QUICK) {
+            QuickSettingsScreen(container, onBack = { nav.popBackStack() }, onOpenSettings = { nav.navigate(Routes.SETTINGS) })
+        }
+        composable(Routes.PLAYER) { PlayerScreen(container, onBack = { nav.popBackStack() }) }
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 container = container,

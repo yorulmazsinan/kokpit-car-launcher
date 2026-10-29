@@ -8,7 +8,17 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.runtime.Composable
 import androidx.test.core.app.ApplicationProvider
 import io.github.yorulmazsinan.kokpit.KokpitApp
+import io.github.yorulmazsinan.kokpit.calls.ActiveCall
+import io.github.yorulmazsinan.kokpit.calls.CallBar
 import io.github.yorulmazsinan.kokpit.calls.CallEntry
+import io.github.yorulmazsinan.kokpit.calls.CallPhase
+import io.github.yorulmazsinan.kokpit.player.MediaFile
+import io.github.yorulmazsinan.kokpit.player.MediaKind
+import io.github.yorulmazsinan.kokpit.player.PlayerContent
+import io.github.yorulmazsinan.kokpit.player.PlayerState
+import io.github.yorulmazsinan.kokpit.settings.QuickSettingsActions
+import io.github.yorulmazsinan.kokpit.settings.QuickSettingsContent
+import io.github.yorulmazsinan.kokpit.settings.QuickSettingsState
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drawer.AppDrawerScreen
 import io.github.yorulmazsinan.kokpit.home.cards.Dock
@@ -45,7 +55,7 @@ class ScreensScreenshotTest {
 
     @Composable
     private fun docked(active: DockSlot, content: @Composable () -> Unit) =
-        DockedLayout({ Dock({}, {}, active = active) }, content)
+        DockedLayout({ Dock({}, {}, active = active) }, content = content)
 
     private val container get() = ApplicationProvider.getApplicationContext<KokpitApp>().container
 
@@ -65,6 +75,56 @@ class ScreensScreenshotTest {
     fun intro() {
         compose.setContent { KokpitTheme { DesignScale { IntroSettingsScreen(container, onBack = {}) } } }
         save("screen-intro")
+    }
+
+    @Test
+    fun quickSettings() {
+        val state = QuickSettingsState(muted = false, brightness = 180, canSetBrightness = true, wifiNetwork = "Sinan iPhone", hotspot = "Sinan iPhone")
+        compose.setContent { KokpitTheme { DesignScale { QuickSettingsContent(state, QuickSettingsActions(), onBack = {}) } } }
+        save("screen-quick")
+    }
+
+    @Test
+    fun player() {
+        val files = listOf(
+            MediaFile("/u/a.mp3", "Gesi Bağları", "Barış Manço", MediaKind.AUDIO),
+            MediaFile("/u/b.mp3", "Dönence", "Barış Manço", MediaKind.AUDIO),
+            MediaFile("/u/c.mp3", "Kara Sevda", "Cem Karaca", MediaKind.AUDIO),
+        )
+        compose.setContent {
+            KokpitTheme {
+                DesignScale {
+                    DockedLayout({ Dock({}, {}) }) {
+                        PlayerContent(files, PlayerState(files[0], isPlaying = true, hasNext = true), false, 84_000, 221_000, { _, _ -> }, {}, {}, {}, {})
+                    }
+                }
+            }
+        }
+        save("screen-player")
+    }
+
+    @Test
+    fun playerVideoWhileMoving() {
+        val video = MediaFile("/u/v.mp4", "Konser", "Videolar", MediaKind.VIDEO)
+        compose.setContent {
+            KokpitTheme { DesignScale { PlayerContent(listOf(video), PlayerState(video, isPlaying = true), true, 10_000, 600_000, { _, _ -> }, {}, {}, {}, {}) } }
+        }
+        save("screen-player-moving")
+    }
+
+    @Test
+    fun incomingCallOverPhone() {
+        compose.setContent {
+            KokpitTheme {
+                DesignScale {
+                    DockedLayout(
+                        { Dock({}, {}, active = DockSlot.RADIO) },
+                        { CallBar(ActiveCall(CallPhase.INCOMING, "05551112233", "Ece", null), {}, {}, {}) },
+                    ) { RadioScreen(984, listOf(984, 914, 953), {}, {}, {}, {}, connected = true) }
+                }
+            }
+        }
+        save("screen-call")
     }
 
     @Test

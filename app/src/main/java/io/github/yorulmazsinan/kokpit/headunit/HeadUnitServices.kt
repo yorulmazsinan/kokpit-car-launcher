@@ -30,6 +30,9 @@ class HeadUnitPhone(private val channel: VendorChannel) {
     fun previous() = channel.send(10)
     fun next() = channel.send(11)
     fun musicState(): Int? = channel.call(7) { it.readInt() }
+
+    /** The current call's `BluetoothHeadsetClientCall` state, -1 when there is none. */
+    fun callState(): Int? = channel.call(5) { it.readInt() }
 }
 
 /** Status and car data via `ITsCommon` (the MainUI service). */
@@ -42,6 +45,13 @@ class HeadUnitCommon(private val channel: VendorChannel) {
     fun reverseState(): Int? = channel.call(8) { it.readInt() }
     fun nightMode(): Boolean? = channel.call(14) { it.readInt() != 0 }
     fun workMode(): Int? = channel.call(10) { it.readInt() }
+    fun mute() = channel.send(2)
+    fun volumeUp() = channel.send(3)
+    fun volumeDown() = channel.send(4)
+    fun isMuted(): Boolean? = channel.call(13) { it.readInt() != 0 }
+    fun openEqualizer() = channel.send(7)
+    fun showVolume() = channel.send(21)
+    fun screenOff() = channel.send(22)
 }
 
 /** CAN-bus data via `ITsSpeechCar`; only filled when a CAN decoder is fitted and configured. */

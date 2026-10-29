@@ -39,10 +39,11 @@ import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit, onOpenSettings: () -> Unit) {
+fun AppDrawerScreen(apps: InstalledApps, onBack: () -> Unit, onOpenSettings: () -> Unit, onOpenPlayer: () -> Unit = {}) {
     val context = LocalContext.current
     val entries by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { apps.launchable() } }
     ScreenScaffold(stringResource(R.string.dock_apps), onBack) {
+        ListRow(stringResource(R.string.player_title), stringResource(R.string.drawer_player_hint), onClick = onOpenPlayer)
         ListRow(stringResource(R.string.settings_title), stringResource(R.string.drawer_settings_hint), onClick = onOpenSettings)
         LazyVerticalGrid(GridCells.Adaptive(170.dp), Modifier.padding(horizontal = 12.dp)) {
             items(entries, key = { it.component.flattenToString() }) { app ->

@@ -8,6 +8,8 @@ import android.net.Network
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.yorulmazsinan.kokpit.calendar.CalendarRepository
 import io.github.yorulmazsinan.kokpit.calls.CallLogRepository
+import io.github.yorulmazsinan.kokpit.calls.CallMonitor
+import io.github.yorulmazsinan.kokpit.player.UsbPlayer
 import io.github.yorulmazsinan.kokpit.connect.KokpitService
 import io.github.yorulmazsinan.kokpit.connect.UsbAttachActivity
 import io.github.yorulmazsinan.kokpit.connect.WifiAutoConnector
@@ -56,6 +58,8 @@ class AppContainer(context: Context) {
     val calls = CallLogRepository(appContext, scope)
     val headUnit = HeadUnit(appContext, scope)
     val vendorModes = VendorModes { headUnit.common }
+    val callMonitor = CallMonitor(appContext, scope, headUnit, calls)
+    val usbPlayer by lazy { UsbPlayer(appContext) }
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
     val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)
@@ -85,6 +89,7 @@ class AppContainer(context: Context) {
         calendar.start()
         calls.refresh()
         headUnit.start()
+        callMonitor.start()
         nowPlaying.refreshAccess()
         val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
         connectivity.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
