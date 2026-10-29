@@ -152,6 +152,8 @@
     <string name="radio_down">Frekansı düşür</string>
     <string name="radio_up">Frekansı artır</string>
     <string name="radio_save">Kaydet</string>
+    <string name="radio_hold_to_save">Basılı Tut</string>
+    <string name="radio_empty_preset">Boş kayıt, çalan istasyonu kaydetmek için basılı tutun</string>
     <string name="average_speed_short">Ort. %1$d km/s</string>
     <string name="saved_to">Kaydedildi: %1$s</string>
     <string name="weather_waiting_location">Konum bekleniyor — yenilemek için dokunun</string>

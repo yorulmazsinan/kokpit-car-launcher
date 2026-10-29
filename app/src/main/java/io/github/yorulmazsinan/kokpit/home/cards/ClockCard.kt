@@ -176,7 +176,7 @@ private fun CalendarRow(state: CalendarState, now: LocalDateTime, onRequestPermi
 @Composable
 private fun CalendarLine(modifier: Modifier, content: @Composable () -> Unit) {
     Column(modifier.testTag("calendar_row")) {
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest)
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Event, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))

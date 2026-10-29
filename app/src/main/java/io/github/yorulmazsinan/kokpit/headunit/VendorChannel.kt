@@ -6,6 +6,7 @@ import android.os.Parcel
 /** AIDL interface names exposed by the FF/TS head unit's `com.ts.MainUI`. */
 object VendorDescriptors {
     const val COMMON = "com.ts.main.common.ITsCommon"
+    const val RADIO_COMMON = "com.ts.main.common.ITsRadioCommon"
     const val RADIO = "com.ts.tsspeechlib.radio.ITsSpeechRadio"
     const val BT = "com.ts.tsspeechlib.bt.ITsSpeechBt"
     const val CAR = "com.ts.tsspeechlib.car.ITsSpeechCar"

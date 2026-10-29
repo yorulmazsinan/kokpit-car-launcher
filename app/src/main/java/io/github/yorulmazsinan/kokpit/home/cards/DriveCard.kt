@@ -65,7 +65,8 @@ fun SpeedCard(
                     stringResource(R.string.average_speed_short, avg),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.testTag("average_speed"),
+                    // Sits 3 dp higher without moving the gauge below it.
+                    modifier = Modifier.offset(y = (-3).dp).testTag("average_speed"),
                 )
             }
             SpeedGauge(if (trip.hasFix) trip.speedKmh else null, Modifier.fillMaxWidth().weight(1f))
@@ -113,7 +114,7 @@ fun gaugeGeometry(width: Float, height: Float, stroke: Float): GaugeGeometry {
 
 @Composable
 private fun SpeedGauge(speedKmh: Int?, modifier: Modifier) {
-    val track = MaterialTheme.colorScheme.outlineVariant
+    val track = MaterialTheme.colorScheme.surfaceContainerHighest
     val fill = MaterialTheme.colorScheme.primary
     val density = LocalDensity.current
     BoxWithConstraints(modifier) {

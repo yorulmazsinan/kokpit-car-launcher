@@ -35,6 +35,7 @@ import io.github.yorulmazsinan.kokpit.media.NowPlayingState
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.Contact
 import io.github.yorulmazsinan.kokpit.phone.PhoneContent
+import io.github.yorulmazsinan.kokpit.radio.RadioPreset
 import io.github.yorulmazsinan.kokpit.radio.RadioScreen
 import io.github.yorulmazsinan.kokpit.ui.theme.DesignScale
 import io.github.yorulmazsinan.kokpit.ui.theme.KokpitTheme
@@ -124,7 +125,7 @@ class ScreensScreenshotTest {
                     DockedLayout(
                         { Dock({}, {}, active = DockSlot.RADIO) },
                         { CallBar(ActiveCall(CallPhase.INCOMING, "05551112233", "Ece", null), {}, {}, {}) },
-                    ) { RadioScreen(984, listOf(984, 914, 953), {}, {}, {}, {}, connected = true) }
+                    ) { RadioScreen(984, SAMPLE_PRESETS, "Kral FM", {}, {}, {}, {}, connected = true) }
                 }
             }
         }
@@ -148,7 +149,7 @@ class ScreensScreenshotTest {
             KokpitTheme {
                 DesignScale {
                     Box {
-                        DockedLayout({ Dock({}, {}, active = DockSlot.RADIO) }) { RadioScreen(984, listOf(984, 914, 953), {}, {}, {}, {}, connected = true) }
+                        DockedLayout({ Dock({}, {}, active = DockSlot.RADIO) }) { RadioScreen(984, SAMPLE_PRESETS, "Kral FM", {}, {}, {}, {}, connected = true) }
                         AssistantPanel(state, "Claude · claude-opus-5-5", {}, {}, {}, {})
                     }
                 }
@@ -178,7 +179,16 @@ class ScreensScreenshotTest {
 
     @Test
     fun radio() {
-        compose.setContent { KokpitTheme { DesignScale { docked(DockSlot.RADIO) { RadioScreen(984, listOf(984, 914, 953, 974, 1040), {}, {}, {}, {}, connected = true) } } } }
+        compose.setContent { KokpitTheme { DesignScale { docked(DockSlot.RADIO) { RadioScreen(984, SAMPLE_PRESETS, "Kral FM", {}, {}, {}, {}, connected = true) } } } }
         save("screen-radio")
     }
 }
+
+private val SAMPLE_PRESETS = listOf(
+    RadioPreset(984, "Kral FM"),
+    RadioPreset(914, "TRT FM"),
+    RadioPreset(953, "Power FM"),
+    RadioPreset(1040, "Radyo Eksen"),
+    RadioPreset(974),
+    null,
+)

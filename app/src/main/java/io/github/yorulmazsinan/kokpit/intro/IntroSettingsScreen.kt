@@ -19,9 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +38,8 @@ import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.storage.findVideos
 import io.github.yorulmazsinan.kokpit.storage.removableRoots
 import java.io.File
+import io.github.yorulmazsinan.kokpit.ui.components.KokpitButtonShape
+import io.github.yorulmazsinan.kokpit.ui.components.SettingsPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HelpText
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.components.SectionHeader
@@ -104,21 +103,13 @@ fun IntroSettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     IntroMode.SEQUENTIAL to R.string.intro_mode_sequential,
                     IntroMode.RANDOM to R.string.intro_mode_random,
                 )
-                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = 760.dp).fillMaxWidth()) {
-                    modes.forEachIndexed { i, (mode, label) ->
-                        SegmentedButton(
-                            selected = intro.mode == mode,
-                            onClick = { update { it.copy(mode = mode) } },
-                            shape = SegmentedButtonDefaults.itemShape(i, modes.size),
-                            modifier = Modifier.heightIn(min = Dimens.MinTouch),
-                        ) { Text(stringResource(label)) }
-                    }
-                }
+                SettingsPicker(modes, modes.first { it.first == intro.mode }, { (mode, _) -> update { it.copy(mode = mode) } }) { stringResource(it.second) }
             }
             item { ToggleRow(stringResource(R.string.intro_every_wake), intro.everyWake, stringResource(R.string.intro_every_wake_help)) { on -> update { it.copy(everyWake = on) } } }
             item { ToggleRow(stringResource(R.string.intro_with_sound), intro.withSound) { on -> update { it.copy(withSound = on) } } }
             item {
                 Button(
+                    shape = KokpitButtonShape,
                     onClick = { storagePermission.launch(readVideoPermission()) },
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
                 ) { Text(stringResource(R.string.intro_add)) }

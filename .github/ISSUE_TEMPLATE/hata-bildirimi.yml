@@ -1,0 +1,31 @@
+name: Hata Bildirimi
+description: Kokpit'te bir şey beklendiği gibi çalışmıyor.
+labels: [hata]
+body:
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne Oldu?
+      description: Ne yaptınız, ne bekliyordunuz, ne oldu?
+    validations:
+      required: true
+  - type: input
+    id: surum
+    attributes:
+      label: Kokpit Sürümü
+      description: Ayarlar ekranının en altında yazar.
+      placeholder: "0.6.2"
+    validations:
+      required: true
+  - type: input
+    id: cihaz
+    attributes:
+      label: Cihaz
+      description: Marka, model, işlemci ve ekran ölçüsü.
+      placeholder: "MT8227L, Android 8.1, 1024×600"
+  - type: textarea
+    id: teshis
+    attributes:
+      label: Teşhis Raporu
+      description: Ayarlar → Teşhis → Kopyala; buraya yapıştırın ya da USB'ye kaydettiğiniz dosyayı ekleyin.
+      render: text

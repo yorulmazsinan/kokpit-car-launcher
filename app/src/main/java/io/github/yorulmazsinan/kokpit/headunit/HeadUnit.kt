@@ -25,6 +25,10 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
 
     private val _frequency = MutableStateFlow<Int?>(null)
     val frequency: StateFlow<Int?> = _frequency.asStateFlow()
+    private val _station = MutableStateFlow<RdsStation?>(null)
+    /** RDS name with the frequency it was read on, so a stale name never sticks to a new station. */
+    val station: StateFlow<RdsStation?> = _station.asStateFlow()
+    @Volatile private var radioDetails: HeadUnitRadioDetails? = null
     private val _btDevice = MutableStateFlow<String?>(null)
     val btDevice: StateFlow<String?> = _btDevice.asStateFlow()
     private val _available = MutableStateFlow(false)
@@ -40,10 +44,14 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
     /** Reads frequency and Bluetooth device; call periodically while a screen needs them. */
     fun refresh() {
         scope.launch(Dispatchers.IO) {
-            common?.frequencyTenths()?.let { _frequency.value = it }
+            val tuned = common?.frequencyTenths()
+            tuned?.let { _frequency.value = it }
+            _station.value = tuned?.let { f -> details()?.stationName()?.let { RdsStation(f, it) } }
             _btDevice.value = phone?.deviceName()?.takeIf { it.isNotBlank() }
         }
     }
+
+    private fun details(): HeadUnitRadioDetails? = radioDetails ?: common?.radioDetails()?.also { radioDetails = it }
 
     /** Snapshot of everything the vendor services report, for Diagnostics. */
     fun probe(): List<String> {
@@ -51,7 +59,7 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
         val k = car
         return listOf(
             "services common=${c != null} radio=${radio != null} bt=${phone != null} car=${k != null}",
-            "frequency=${c?.frequencyTenths()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
+            "frequency=${c?.frequencyTenths()} rds=${details()?.stationName()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
             "speed=${c?.speed()} temp=${c?.temperature()} brake=${c?.brakeState()} reverse=${c?.reverseState()} night=${c?.nightMode()} mode=${c?.workMode()}",
             "callLog uri=${VendorCallLog.uri} rows=${VendorCallLog.query(context).size}",
             "can: km=${k?.totalKilometres()} fuel=${k?.fuelLeft()} speed=${k?.speed()} left=${k?.leftSignal()} right=${k?.rightSignal()} hazard=${k?.hazard()}",
@@ -78,3 +86,5 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
         const val VENDOR_PACKAGE = "com.ts.MainUI"
     }
 }
+
+data class RdsStation(val frequency: Int, val name: String)

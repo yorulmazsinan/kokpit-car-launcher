@@ -34,9 +34,6 @@ import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material.icons.outlined.DesktopAccessDisabled
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -61,6 +58,7 @@ import io.github.yorulmazsinan.kokpit.AppContainer
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.SegmentedPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HeaderClock
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
@@ -204,16 +202,7 @@ fun QuickSettingsContent(state: QuickSettingsState, actions: QuickSettingsAction
                     }
                     Spacer(Modifier.weight(1f))
                     val modes = listOf(ThemeMode.DARK to R.string.theme_dark, ThemeMode.LIGHT to R.string.theme_light, ThemeMode.AUTO to R.string.theme_auto)
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        modes.forEachIndexed { i, (mode, label) ->
-                            SegmentedButton(
-                                selected = state.themeMode == mode,
-                                onClick = { actions.onThemeMode(mode) },
-                                shape = SegmentedButtonDefaults.itemShape(i, modes.size),
-                                modifier = Modifier.heightIn(min = Dimens.MinTouch),
-                            ) { Text(stringResource(label), style = MaterialTheme.typography.titleSmall) }
-                        }
-                    }
+                    SegmentedPicker(modes, modes.first { it.first == state.themeMode }, { actions.onThemeMode(it.first) }, { stringResource(it.second) })
                     TileButton(Icons.Outlined.DesktopAccessDisabled, stringResource(R.string.quick_screen_off), vendorAvailable, actions.onScreenOff, Modifier.fillMaxWidth(), "quick_screen_off")
                 }
             }
@@ -271,13 +260,18 @@ private fun TileButton(
         enabled = enabled,
         modifier = modifier.heightIn(min = Dimens.MinTouch).testTag(tag),
         shape = RoundedCornerShape(10.dp),
-        color = if (lit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.background,
-        border = if (lit) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        // Filled like the assistant's settings button; a switched-on tile (mute) goes brighter.
+        color = when {
+            !enabled -> MaterialTheme.colorScheme.background
+            lit -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.primaryContainer
+        },
+        border = if (enabled) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         val tint = when {
             !enabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-            lit -> MaterialTheme.colorScheme.onPrimaryContainer
-            else -> MaterialTheme.colorScheme.onSurface
+            lit -> MaterialTheme.colorScheme.onPrimary
+            else -> MaterialTheme.colorScheme.onPrimaryContainer
         }
         if (stacked) {
             Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {

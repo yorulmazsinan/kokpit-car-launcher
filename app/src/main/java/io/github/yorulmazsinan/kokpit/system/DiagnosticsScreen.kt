@@ -35,6 +35,7 @@ import android.Manifest
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.github.yorulmazsinan.kokpit.ui.components.KokpitButtonShape
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
 
@@ -79,14 +80,15 @@ fun DiagnosticsScreen(onBack: () -> Unit) {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp))
         }
         Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = { copyToClipboard(context, text) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
+            Button(shape = KokpitButtonShape, onClick = { copyToClipboard(context, text) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_copy))
             }
-            OutlinedButton(onClick = { writePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
+            OutlinedButton(shape = KokpitButtonShape, onClick = { writePermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) {
                 Text(stringResource(R.string.diagnostics_save))
             }
         }
         OutlinedButton(
+            shape = KokpitButtonShape,
             onClick = { vendorPermission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) },
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp).heightIn(min = Dimens.MinTouch),
         ) { Text(stringResource(R.string.vendor_export)) }

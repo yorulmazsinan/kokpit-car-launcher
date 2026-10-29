@@ -12,9 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +32,8 @@ import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.KokpitButtonShape
+import io.github.yorulmazsinan.kokpit.ui.components.SettingsPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HelpText
 import io.github.yorulmazsinan.kokpit.ui.components.ListRow
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
@@ -45,10 +44,9 @@ import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import kotlinx.coroutines.launch
 
 private const val DAVX5 = "at.bitfire.davdroid"
-private const val REPO_URL = "https://github.com/yorulmazsinan/kokpit"
+private const val REPO_URL = "https://github.com/yorulmazsinan/kokpit-car-launcher"
 
 /** Choice rows stay compact instead of stretching across the whole screen. */
-private val SEGMENTED_MAX_WIDTH = 640.dp
 
 @Composable
 fun SettingsScreen(
@@ -73,30 +71,12 @@ fun SettingsScreen(
             item { SectionHeader(stringResource(R.string.settings_appearance)) }
             item {
                 val modes = listOf(ThemeMode.DARK to R.string.theme_dark, ThemeMode.LIGHT to R.string.theme_light, ThemeMode.AUTO to R.string.theme_auto)
-                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = SEGMENTED_MAX_WIDTH).fillMaxWidth()) {
-                    modes.forEachIndexed { i, (mode, label) ->
-                        SegmentedButton(
-                            selected = settings.themeMode == mode,
-                            onClick = { update { it.copy(themeMode = mode) } },
-                            shape = SegmentedButtonDefaults.itemShape(i, modes.size),
-                            modifier = Modifier.heightIn(min = 52.dp),
-                        ) { Text(stringResource(label)) }
-                    }
-                }
+                SettingsPicker(modes, modes.first { it.first == settings.themeMode }, { (mode, _) -> update { it.copy(themeMode = mode) } }) { stringResource(it.second) }
             }
             item { HelpText(stringResource(R.string.theme_auto_help)) }
             item {
                 val accents = ThemeAccent.entries
-                SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = SEGMENTED_MAX_WIDTH).fillMaxWidth()) {
-                    accents.forEachIndexed { i, accent ->
-                        SegmentedButton(
-                            selected = settings.accent == accent,
-                            onClick = { update { it.copy(accent = accent) } },
-                            shape = SegmentedButtonDefaults.itemShape(i, accents.size),
-                            modifier = Modifier.heightIn(min = 52.dp),
-                        ) { Text(stringResource(accent.label)) }
-                    }
-                }
+                SettingsPicker(accents, settings.accent, { accent -> update { it.copy(accent = accent) } }) { stringResource(it.label) }
             }
 
             assistantSettings(container, settings.assistant) { change -> update { it.copy(assistant = change(it.assistant)) } }
@@ -132,6 +112,7 @@ fun SettingsScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     )
                     Button(
+                        shape = KokpitButtonShape,
                         onClick = {
                             scope.launch {
                                 container.settings.update {

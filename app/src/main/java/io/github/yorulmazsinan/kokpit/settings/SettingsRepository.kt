@@ -12,6 +12,8 @@ import io.github.yorulmazsinan.kokpit.assistant.AssistantSettings
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.intro.IntroMode
 import io.github.yorulmazsinan.kokpit.intro.IntroSettings
+import io.github.yorulmazsinan.kokpit.radio.RadioPreset
+import io.github.yorulmazsinan.kokpit.radio.RadioPresetCodec
 import io.github.yorulmazsinan.kokpit.ui.theme.ThemeAccent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,7 +32,7 @@ data class KokpitSettings(
     val autoCarPlayOnUsb: Boolean = false,
     val intro: IntroSettings = IntroSettings(),
     val radioFrequency: Int = 984,
-    val radioPresets: List<Int> = emptyList(),
+    val radioPresets: List<RadioPreset?> = emptyList(),
     val useKokpitScreens: Boolean = true,
     val assistant: AssistantSettings = AssistantSettings(),
 )
@@ -59,7 +61,7 @@ class SettingsRepository(
         autoCarPlayOnUsb = p[AUTO_CARPLAY] ?: false,
         radioFrequency = p[RADIO_FREQ] ?: 984,
         useKokpitScreens = p[KOKPIT_SCREENS] ?: true,
-        radioPresets = p[RADIO_PRESETS]?.split(',')?.mapNotNull { it.toIntOrNull() }.orEmpty(),
+        radioPresets = RadioPresetCodec.decode(p[RADIO_PRESETS]),
         intro = IntroSettings(
             mode = p[INTRO_MODE]?.let { runCatching { IntroMode.valueOf(it) }.getOrNull() } ?: IntroMode.OFF,
             selectedId = p[INTRO_SELECTED],
@@ -88,7 +90,7 @@ class SettingsRepository(
         p[AUTO_WIFI] = s.autoWifi
         p[RADIO_FREQ] = s.radioFrequency
         p[KOKPIT_SCREENS] = s.useKokpitScreens
-        p[RADIO_PRESETS] = s.radioPresets.joinToString(",")
+        p[RADIO_PRESETS] = RadioPresetCodec.encode(s.radioPresets)
         p[AUTO_CARPLAY] = s.autoCarPlayOnUsb
         p[INTRO_MODE] = s.intro.mode.name
         p.setOrRemove(INTRO_SELECTED, s.intro.selectedId)

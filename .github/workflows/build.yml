@@ -1,4 +1,4 @@
-name: build
+name: Derleme
 
 on:
   push:
@@ -15,9 +15,9 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - name: Test and build
+      - name: Test ve derleme
         run: ./gradlew :app:testDebugUnitTest :app:assembleRelease
       - uses: actions/upload-artifact@v4
         with:
-          name: kokpit-unsigned
+          name: kokpit-imzasiz
           path: app/build/outputs/apk/release/*.apk

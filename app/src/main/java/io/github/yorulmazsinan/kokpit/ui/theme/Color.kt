@@ -21,4 +21,5 @@ object KokpitColors {
     val LightAccent = Color(0xFF0F6E56)
     val LightAccentContainer = Color(0xFF9FE1CB)
     val LightOnAccentContainer = Color(0xFF04342C)
+    val LightHairline = Color(0xFFE6E4DC)
 }

@@ -38,9 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -68,6 +65,7 @@ import io.github.yorulmazsinan.kokpit.AppContainer
 import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.home.cards.elapsedText
 import io.github.yorulmazsinan.kokpit.storage.removableRoots
+import io.github.yorulmazsinan.kokpit.ui.components.SegmentedPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HeaderClock
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
@@ -152,16 +150,8 @@ fun PlayerContent(
         ) {
             PlayerCard(Modifier.weight(1f).fillMaxHeight()) {
                 Column {
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        listOf(MediaKind.AUDIO to R.string.player_music, MediaKind.VIDEO to R.string.player_video).forEachIndexed { i, (k, label) ->
-                            SegmentedButton(
-                                selected = kind == k,
-                                onClick = { kind = k },
-                                shape = SegmentedButtonDefaults.itemShape(i, 2),
-                                modifier = Modifier.heightIn(min = 52.dp),
-                            ) { Text(stringResource(label), style = MaterialTheme.typography.titleMedium) }
-                        }
-                    }
+                    val kinds = listOf(MediaKind.AUDIO to R.string.player_music, MediaKind.VIDEO to R.string.player_video)
+                    SegmentedPicker(kinds, kinds.first { it.first == kind }, { kind = it.first }, { stringResource(it.second) })
                     Spacer(Modifier.size(8.dp))
                     val shown = files.orEmpty().filter { it.kind == kind }
                     when {

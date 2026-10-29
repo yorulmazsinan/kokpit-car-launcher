@@ -152,6 +152,8 @@
     <string name="radio_down">Tune down</string>
     <string name="radio_up">Tune up</string>
     <string name="radio_save">Save</string>
+    <string name="radio_hold_to_save">Hold to Save</string>
+    <string name="radio_empty_preset">Empty preset, hold to save the current station</string>
     <string name="average_speed_short">Avg %1$d km/h</string>
     <string name="saved_to">Saved: %1$s</string>
     <string name="weather_waiting_location">Waiting for location — tap to retry</string>

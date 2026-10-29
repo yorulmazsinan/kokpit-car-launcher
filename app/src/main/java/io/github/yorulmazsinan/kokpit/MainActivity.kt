@@ -46,7 +46,9 @@ import io.github.yorulmazsinan.kokpit.intro.IntroSettingsScreen
 import io.github.yorulmazsinan.kokpit.music.BtMusicScreen
 import io.github.yorulmazsinan.kokpit.phone.PhoneScreen
 import io.github.yorulmazsinan.kokpit.player.PlayerScreen
-import io.github.yorulmazsinan.kokpit.radio.RADIO_PRESET_SLOTS
+import io.github.yorulmazsinan.kokpit.radio.RadioPreset
+import io.github.yorulmazsinan.kokpit.radio.stationNameFor
+import io.github.yorulmazsinan.kokpit.radio.withSlot
 import io.github.yorulmazsinan.kokpit.radio.RadioScreen
 import io.github.yorulmazsinan.kokpit.settings.QuickSettingsScreen
 import io.github.yorulmazsinan.kokpit.settings.SettingsScreen
@@ -328,6 +330,7 @@ private fun KokpitNavHost(
         composable(Routes.RADIO) {
             val settings by container.settings.settings.collectAsStateWithLifecycle()
             val live by container.headUnit.frequency.collectAsStateWithLifecycle()
+            val rds by container.headUnit.station.collectAsStateWithLifecycle()
             val radio = container.headUnit.radio
             SwitchVendorSource(container, VendorSource.RADIO) { radio?.open() }
             LaunchedEffect(Unit) {
@@ -347,13 +350,11 @@ private fun KokpitNavHost(
             RadioScreen(
                 frequency = frequency,
                 presets = settings.radioPresets,
+                stationName = stationNameFor(frequency, rds, settings.radioPresets),
                 onTune = ::tune,
-                onSavePreset = {
-                    scope.launch {
-                        container.settings.update {
-                            it.copy(radioPresets = (it.radioPresets - frequency + frequency).takeLast(RADIO_PRESET_SLOTS))
-                        }
-                    }
+                onSavePreset = { slot ->
+                    val preset = RadioPreset(frequency, stationNameFor(frequency, rds, settings.radioPresets))
+                    scope.launch { container.settings.update { it.copy(radioPresets = it.radioPresets.withSlot(slot, preset)) } }
                 },
                 onOpenVendorRadio = {
                     homeState.dock[DockSlot.RADIO]?.let(container.installedApps::launchIntent)?.let { safeStart(context, it) }

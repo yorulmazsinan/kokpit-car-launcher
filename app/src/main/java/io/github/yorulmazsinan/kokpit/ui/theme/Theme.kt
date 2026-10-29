@@ -22,6 +22,8 @@ private fun darkScheme(p: AccentPalette) = darkColorScheme(
     onSurfaceVariant = p.textSecondary,
     outline = KokpitColors.CardBorder,
     outlineVariant = p.cardBorder,
+    // Hairlines and the speedometer's empty track.
+    surfaceContainerHighest = p.cardBorder,
 )
 
 private val LightScheme = lightColorScheme(
@@ -40,6 +42,7 @@ private val LightScheme = lightColorScheme(
     secondary = KokpitColors.LightTextPrimary,
     tertiary = KokpitColors.LightAccent,
     outlineVariant = KokpitColors.LightCard,
+    surfaceContainerHighest = KokpitColors.LightHairline,
 )
 
 @Composable

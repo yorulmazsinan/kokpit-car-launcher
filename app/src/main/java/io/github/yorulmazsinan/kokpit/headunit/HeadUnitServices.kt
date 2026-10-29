@@ -52,7 +52,22 @@ class HeadUnitCommon(private val channel: VendorChannel) {
     fun openEqualizer() = channel.send(7)
     fun showVolume() = channel.send(21)
     fun screenOff() = channel.send(22)
+
+    /** `getSpecialBinder("Radio")`: the tuner's own `ITsRadioCommon`, which carries RDS. */
+    fun radioDetails(): HeadUnitRadioDetails? =
+        channel.call(55, { writeString("Radio") }) { it.readStrongBinder() }
+            ?.let { HeadUnitRadioDetails(VendorChannel(it, VendorDescriptors.RADIO_COMMON)) }
 }
+
+/** RDS data via `ITsRadioCommon` (MainUI's `RadioServiceBinder`). */
+class HeadUnitRadioDetails(private val channel: VendorChannel) {
+    /** The station's RDS programme service name, e.g. "POWER FM"; null when nothing is received. */
+    fun stationName(): String? = cleanPsName(channel.call(30) { it.readString() })
+}
+
+/** The tuner hands back a fixed 15-char buffer: NUL-padded, sometimes space-padded. */
+fun cleanPsName(raw: String?): String? =
+    raw?.replace('\u0000', ' ')?.trim()?.replace(Regex("\\s+"), " ")?.takeIf { it.isNotEmpty() }
 
 /** CAN-bus data via `ITsSpeechCar`; only filled when a CAN decoder is fitted and configured. */
 class HeadUnitCar(private val channel: VendorChannel) {

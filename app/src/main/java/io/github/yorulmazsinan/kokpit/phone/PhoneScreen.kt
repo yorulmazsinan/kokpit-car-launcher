@@ -33,9 +33,6 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +55,7 @@ import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.calls.CallEntry
 import io.github.yorulmazsinan.kokpit.calls.CallType
 import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.SegmentedPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HeaderClock
 import io.github.yorulmazsinan.kokpit.ui.components.ScreenScaffold
 import io.github.yorulmazsinan.kokpit.ui.theme.Dimens
@@ -105,16 +103,7 @@ fun PhoneContent(calls: List<CallEntry>, contacts: List<Contact>, onBack: () -> 
         ) {
             PhoneCard(Modifier.weight(1.15f).fillMaxHeight()) {
                 Column {
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        PhoneTab.entries.forEachIndexed { i, t ->
-                            SegmentedButton(
-                                selected = tab == t,
-                                onClick = { tab = t },
-                                shape = SegmentedButtonDefaults.itemShape(i, PhoneTab.entries.size),
-                                modifier = Modifier.heightIn(min = 52.dp),
-                            ) { Text(stringResource(t.label), style = MaterialTheme.typography.titleMedium) }
-                        }
-                    }
+                    SegmentedPicker(PhoneTab.entries, tab, { tab = it }, { stringResource(it.label) })
                     Spacer(Modifier.size(8.dp))
                     LazyColumn(Modifier.testTag("phone_list")) {
                         when (tab) {

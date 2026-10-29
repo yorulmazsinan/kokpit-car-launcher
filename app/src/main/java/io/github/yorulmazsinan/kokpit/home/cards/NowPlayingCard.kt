@@ -82,7 +82,7 @@ fun NowPlayingCard(
                     }
                     HorizontalDivider(
                         Modifier.padding(top = 12.dp).testTag("music_divider"),
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
                     )
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                         Control(Icons.Outlined.SkipPrevious, R.string.media_previous, onPrevious)

@@ -1,93 +1,164 @@
 # Kokpit
 
-**An open-source home screen for Android car head units.** Built for the cheap MediaTek
-(MT8227L, Android 8.1) units sold as "Android CarPlay radios", whose stock launchers look
-dated and hide system settings.
+**Android araç multimedya cihazları için açık kaynak ana ekran.** "Android CarPlay'li
+multimedya" diye satılan uygun fiyatlı MediaTek cihazlar (MT8227L, Android 8.1) için
+yazıldı. Bu cihazların ana ekranı eski görünür, sistem ayarlarının bir kısmı gizlidir;
+Kokpit ikisini de düzeltir.
 
-[Türkçe README](README.tr.md)
+![Kokpit ana ekranı, 1024×600](docs/screenshots/home-1024x600.png)
 
-![Home screen at 1024×600](docs/screenshots/home-1024x600.png)
+Kokpit bir ana ekran uygulamasıdır, cihaz yazılımı değildir. Root gerekmez; sistem ya da
+MCU yazılımına dokunulmaz. Kaldırdığınızda cihaz eskisi gibi çalışır.
 
-## What it does
+## Neler Yapar
 
-- **Home screen** – large clock and date, weather (Open-Meteo, no API key), your next
-  calendar event, what's playing with play/pause/skip, GPS speed, heading and trip average
-  speed, and six big buttons: CarPlay, Bluetooth, Phone, Radio, Maps, Apps.
-- **Hidden settings back** – screen lock (change or remove), all Android settings,
-  developer options, default apps, date and time, language, and an activity explorer for
-  the unit's own hidden screens.
-- **On wake-up** (ignition on) – turns Wi-Fi on and joins your phone's hotspot; can open
-  CarPlay when an iPhone is plugged in; plays your own intro video.
-- **Diagnostics** – one screen with the unit's real Android version, screen size, Wi-Fi
-  bands and vendor packages, to copy into a bug report.
-
-Kokpit is a launcher, not a firmware. Radio, Bluetooth calls, the reversing camera,
-steering-wheel keys and CarPlay stay in the unit's own apps; Kokpit opens them. Nothing
-here needs root, and nothing touches the system or MCU firmware.
-
-## Supported units
+### Ana Ekran
+Büyük saat ve tarih, hava durumu, son aramalar, takvimdeki sıradaki etkinlik, çalan
+müzik ve kontrolleri, GPS hız göstergesi ve yolculuk ortalaması, gidilen yön. Altta altı
+büyük düğme: CarPlay, Bluetooth, Telefon, Radyo, Harita, Uygulamalar. Koyu, açık ve gün
+doğumu/batımına göre otomatik tema; üç renk seçeneği.
 
 | | |
 |---|---|
-| Tested | MT8227L, Android 8.1 (sold as "Android 11"), 1024×600 |
-| Best effort | Other landscape Android 8.1–13 head units, 800×480 up to 1920×720 |
+| ![Açık tema](docs/screenshots/home-1024x600-light.png) | ![Uygulamalar](docs/screenshots/screen-drawer.png) |
 
-On Android 10 and later, apps can no longer switch Wi-Fi on by themselves: Kokpit adds your
-hotspot as a suggested network and shows a notification when Wi-Fi is off.
+### Cihazın Kendi Donanımına Bağlı Ekranlar
+MT8227L cihazlarda Kokpit, üreticinin servislerine doğrudan bağlanır; radyo, Bluetooth
+ve telefon üreticinin uygulamasını açmadan Kokpit'in kendi ekranlarından yönetilir.
 
-## Install with a USB stick
+- **Radyo** – RDS'ten gelen istasyon adı, parmakla kaydırılan frekans kadranı, istasyon
+  arama ve altı kayıt. Kayda dokununca istasyona geçer, basılı tutunca çalan istasyonu
+  adıyla kaydeder.
+- **Telefon** – son aramalar, rehber, favoriler ve tuş takımı; aramalar cihazın
+  Bluetooth'u üzerinden yapılır. Gelen aramada her ekranın üstünde arama kartı çıkar.
+- **Bluetooth Müzik** – telefondan çalan müziği gösterir ve yönetir.
 
-1. Download `kokpit-<version>.apk` from [Releases](https://github.com/yorulmazsinan/kokpit/releases)
-   and copy it to a USB stick.
-2. Plug the stick into the head unit, open its file manager and tap the APK. Allow
-   "unknown sources" when asked.
-3. Open Kokpit once and allow location and calendar.
+| | |
+|---|---|
+| ![Radyo](docs/screenshots/screen-radio.png) | ![Telefon](docs/screenshots/screen-phone.png) |
+| ![Bluetooth Müzik](docs/screenshots/screen-music.png) | ![Gelen arama](docs/screenshots/screen-call.png) |
 
-### Make it the home screen — and undo it
+### Yapay Zekâ Asistanı
+Ana ekrandaki mikrofona dokunup konuşun: "Kral FM'i aç", "Annemi ara", "En yakın
+benzinliğe götür", "Sesi kıs", "Hızım kaç?". Asistan radyoyu ayarlar, arama yapar,
+haritada yol tarifi başlatır, müziği ve sesi yönetir, uygulama açar, telefonunuzun
+erişim noktasına bağlanır. Cevabı sesli okur.
 
-- Press the home key and choose **Kokpit → Always**, or go to Android settings → Apps →
-  Default apps → Home app.
-- To go back: Kokpit → long-press **Apps** → Settings → System Tools →
-  **Return to Stock Home Screen**, then pick the stock launcher as default the same way.
-- Some units hard-wire the home key to the stock launcher. If yours does, open
-  Settings → Diagnostics, save the report and open an issue with it.
+Claude, OpenAI ya da Gemini ile çalışır; kendi API anahtarınızı Ayarlar'a girersiniz.
+ChatGPT, Claude veya Gemini aboneliği API kullanımını kapsamaz; anahtarı sağlayıcının
+geliştirici sayfasından alırsınız.
 
-## Setting things up
+| | |
+|---|---|
+| ![Asistan dinliyor](docs/screenshots/screen-assistant-listening.png) | ![Asistan cevap veriyor](docs/screenshots/screen-assistant-answer.png) |
 
-- **Remove the screen lock:** Settings → System Tools → *Change or Remove Screen Lock*,
-  enter your current PIN, choose *None*.
-- **Music on the home screen:** tap the music card and grant notification access to Kokpit
-  (Android only shares what's playing with apps that have it).
-- **iCloud calendar:** create an app-specific password at account.apple.com, install
-  [DAVx⁵](https://www.davx5.com/), add an account with `https://caldav.icloud.com`, your
-  Apple ID email and that password, then pick your calendars. Google Calendar works without
-  extra steps.
-- **iPhone hotspot:** turn on *Allow Others to Join* and *Maximise Compatibility* (most of
-  these units only see 2.4 GHz), then enter the hotspot name and password under
-  Settings → Connection.
-- **Intro video:** Settings → Intro Video → *Add Videos from USB*. Videos are copied to the
-  unit, so the stick can come out. MP4 (H.264), up to 20 MB; 1024×600 and 3–8 seconds look
-  best. Choose one, play them in turn or at random, or turn it off.
-- **Assistant button:** for now it opens any app you give it (for example ChatGPT). A
-  built-in voice assistant is planned.
+### USB Medya
+USB bellekteki müzik ve videoları listeler ve oynatır. Araç hareket ederken video
+görüntüsü kapanır, ses devam eder.
 
-## Privacy
+### Hızlı Ayarlar
+Ses, sessiz, ekolayzır, ekran parlaklığı, tema, ekranı kapatma ve Wi-Fi tek ekranda.
 
-Kokpit sends one kind of request to the internet: your approximate position to
-[Open-Meteo](https://open-meteo.com/) for the forecast. No analytics, no ads, no accounts.
-The hotspot password is encrypted with the Android Keystore.
+| | |
+|---|---|
+| ![USB Medya](docs/screenshots/screen-player.png) | ![Hızlı Ayarlar](docs/screenshots/screen-quick.png) |
 
-`QUERY_ALL_PACKAGES` is requested because a home screen has to list and launch every app.
+### Kontak Açılınca
+Wi-Fi'ı açıp telefonunuzun erişim noktasına bağlanır, iPhone takılıysa CarPlay'i
+açabilir ve kendi açılış videonuzu oynatır.
 
-## Building
+### Gizlenen Ayarlar Geri Gelir
+Ekran kilidini değiştirme veya kaldırma, tüm Android ayarları, geliştirici seçenekleri,
+varsayılan uygulamalar, tarih ve saat, dil, cihazın gizli ekranları için etkinlik
+gezgini. **Teşhis** ekranı cihazın gerçek Android sürümünü, ekran ölçüsünü, Wi-Fi
+bantlarını ve üretici servislerinden gelen değerleri tek yerde toplar; hata
+bildirimine eklemek için USB'ye kaydedilir.
+
+## Desteklenen Cihazlar
+
+| | |
+|---|---|
+| Test edilen | MT8227L, Android 8.1 ("Android 11" diye satılır), 1024×600 |
+| Çalışması beklenen | Diğer yatay Android 8.1–13 multimedya cihazları, 800×480 ile 1920×720 arası |
+
+Radyo, Bluetooth ve telefon ekranlarının üreticinin servislerine bağlanması FF/TS
+yazılımlı MT8227L cihazlara özeldir (`com.ts.MainUI`). Başka cihazlarda bu düğmeler
+cihazın kendi uygulamalarını açar; geri kalan her şey çalışır.
+
+Android 10 ve sonrasında uygulamalar Wi-Fi'ı kendisi açamaz. Bu sürümlerde Kokpit
+erişim noktanızı önerilen ağ olarak ekler; Wi-Fi kapalıysa bildirim gösterir.
+
+## USB Bellekle Kurulum
+
+1. [Sürümler](https://github.com/yorulmazsinan/kokpit-car-launcher/releases) sayfasından
+   `kokpit-<sürüm>.apk` dosyasını indirip USB belleğe kopyalayın.
+2. Belleği cihaza takın, dosya yöneticisinden APK'ya dokunun. Sorulursa bilinmeyen
+   kaynaklardan yüklemeye izin verin.
+3. Kokpit'i bir kez açın, konum, takvim, telefon ve mikrofon izinlerini verin.
+
+Güncellerken yeni APK'yı aynı yoldan kurmanız yeterli; ayarlarınız korunur.
+
+### Ana Ekran Yapmak ve Geri Almak
+
+- Ev tuşuna basıp **Kokpit → Her zaman**'ı seçin ya da Android ayarları → Uygulamalar →
+  Varsayılan uygulamalar → Ana ekran uygulaması.
+- Geri almak için: Kokpit'te **Uygulamalar**'a uzun basın → Ayarlar → Sistem Araçları →
+  **Üretici Ana Ekranına Dön**, sonra aynı yoldan üreticinin ekranını varsayılan yapın.
+- Bazı cihazlarda ev tuşu üreticinin ekranına sabitlenmiştir. Sizinki öyleyse Teşhis
+  raporunu USB'ye kaydedip onunla bir [hata bildirimi](https://github.com/yorulmazsinan/kokpit-car-launcher/issues/new/choose)
+  açın.
+
+## İlk Ayarlar
+
+- **Ekran kilidini kaldırma:** Ayarlar → Sistem Araçları → *Ekran Kilidini Değiştir veya
+  Kaldır*, mevcut PIN'i girin, *Yok*'u seçin.
+- **Ana ekranda çalan müzik:** müzik kartına dokunup Kokpit'e bildirim erişimi verin.
+  Android çalan şarkıyı yalnızca bu izni olan uygulamalarla paylaşır.
+- **iCloud takvimi:** account.apple.com'dan uygulamaya özel parola oluşturun,
+  [DAVx⁵](https://www.davx5.com/)'i kurun; `https://caldav.icloud.com` adresi, Apple
+  Kimliği e-postanız ve bu parolayla hesap ekleyip takvimlerinizi seçin. Google Takvim
+  için ek adım gerekmez.
+- **iPhone erişim noktası:** *Başkalarının Katılmasına İzin Ver* ve *Uyumluluğu En Üst
+  Düzeye Çıkar* açık olsun (bu cihazların çoğu yalnızca 2.4 GHz görür). Erişim noktası
+  adını ve parolasını Ayarlar → Bağlantı'ya girin.
+- **Yapay zekâ asistanı:** Ayarlar → Yapay Zekâ Asistanı'ndan sağlayıcıyı seçin, API
+  anahtarınızı girip Kaydet'e basın.
+- **Açılış videosu:** Ayarlar → Açılış Videosu → *USB'den Video Ekle*. Videolar cihaza
+  kopyalanır, sonra USB'yi çıkarabilirsiniz. MP4 (H.264), en fazla 20 MB; 1024×600 ve
+  3–8 saniye en iyi sonucu verir.
+
+## Gizlilik
+
+Kokpit'te analitik, reklam ve hesap yoktur. İnternete yalnızca şu istekler gider:
+
+- **Hava durumu:** yaklaşık konumunuz [Open-Meteo](https://open-meteo.com/)'ya.
+- **Yapay zekâ asistanı** (yalnızca kullandığınızda): söylediğiniz komutun yazıya
+  dökülmüş hali ve aracın o anki durumu (saat, hız, yön, çalan müzik, radyo frekansı),
+  yalnızca seçtiğiniz sağlayıcıya (Anthropic, OpenAI ya da Google). Sesinizi yazıya
+  Android'in kendi konuşma tanıma servisi çevirir.
+
+API anahtarları ve erişim noktası parolası cihazda Android Keystore ile şifrelenir,
+yalnızca ilgili sağlayıcıya gönderilir.
+
+`QUERY_ALL_PACKAGES` izni, ana ekranın tüm uygulamaları listeleyip açabilmesi için
+gerekir.
+
+## Derleme
 
 ```bash
 ./gradlew :app:testDebugUnitTest :app:assembleDebug
 ```
 
-JDK 17–21. Release builds are signed when `keystore.properties` (or
-`~/.config/kokpit/keystore.properties`) exists.
+JDK 17–21 gerekir. `keystore.properties` (ya da `~/.config/kokpit/keystore.properties`)
+varsa yayın derlemesi imzalanır. Ekran görüntüleri Robolectric testleriyle üretilir ve
+`app/build/screenshots/` altına yazılır.
 
-## License
+## Katkı
 
-[Apache License 2.0](LICENSE)
+Hata bildirimleri ve öneriler [Issues](https://github.com/yorulmazsinan/kokpit-car-launcher/issues)
+sayfasından. Farklı bir cihazda denediyseniz Teşhis raporunu eklemeniz en çok işe
+yarayan katkıdır.
+
+## Lisans
+
+[Apache Lisansı 2.0](LICENSE)

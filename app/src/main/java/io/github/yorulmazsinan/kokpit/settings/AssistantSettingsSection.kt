@@ -17,9 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +40,8 @@ import io.github.yorulmazsinan.kokpit.assistant.AssistantSettings
 import io.github.yorulmazsinan.kokpit.assistant.VoiceStatus
 import io.github.yorulmazsinan.kokpit.assistant.backendFor
 import io.github.yorulmazsinan.kokpit.system.safeStart
+import io.github.yorulmazsinan.kokpit.ui.components.KokpitButtonShape
+import io.github.yorulmazsinan.kokpit.ui.components.SettingsPicker
 import io.github.yorulmazsinan.kokpit.ui.components.HelpText
 import io.github.yorulmazsinan.kokpit.ui.components.ListRow
 import io.github.yorulmazsinan.kokpit.ui.components.SectionHeader
@@ -55,16 +54,7 @@ fun LazyListScope.assistantSettings(container: AppContainer, assistant: Assistan
     item { HelpText(stringResource(R.string.settings_ai_provider_help)) }
     item {
         val providers = AiProvider.entries
-        SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = 20.dp, vertical = 8.dp).widthIn(max = 640.dp).fillMaxWidth()) {
-            providers.forEachIndexed { i, provider ->
-                SegmentedButton(
-                    selected = assistant.provider == provider,
-                    onClick = { update { it.copy(provider = provider) } },
-                    shape = SegmentedButtonDefaults.itemShape(i, providers.size),
-                    modifier = Modifier.heightIn(min = 52.dp),
-                ) { Text(provider.label) }
-            }
-        }
+        SettingsPicker(providers, assistant.provider, { provider -> update { it.copy(provider = provider) } }) { it.label }
     }
     item(key = "ai_key_${assistant.provider}") {
         val stored = assistant.keys[assistant.provider].orEmpty()
@@ -79,6 +69,7 @@ fun LazyListScope.assistantSettings(container: AppContainer, assistant: Assistan
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             )
             Button(
+                shape = KokpitButtonShape,
                 onClick = { update { it.copy(keys = it.keys + (it.provider to key)) } },
                 enabled = key != stored,
                 modifier = Modifier.heightIn(min = Dimens.MinTouch),
@@ -123,9 +114,10 @@ private fun ModelRow(assistant: AssistantSettings, update: ((AssistantSettings) 
             singleLine = true,
         )
         if (model != assistant.model) {
-            Button(onClick = { save(model) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) { Text(stringResource(R.string.save)) }
+            Button(shape = KokpitButtonShape, onClick = { save(model) }, modifier = Modifier.heightIn(min = Dimens.MinTouch)) { Text(stringResource(R.string.save)) }
         }
         OutlinedButton(
+            shape = KokpitButtonShape,
             onClick = {
                 val key = assistant.key ?: return@OutlinedButton
                 picking = true
