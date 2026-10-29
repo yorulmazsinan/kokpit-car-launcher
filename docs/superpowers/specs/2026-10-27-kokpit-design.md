@@ -201,6 +201,14 @@ OpenAI Java SDK, Google Gen AI Java SDK. Ortak bir `AssistantProvider` arayüzü
 SDK Android 8.1 / 32-bit'te çalışmazsa (ilk iş olarak doğrulanır) o sağlayıcı için doğrudan
 REST çağrısına düşülür ve bu dokümana not edilir.
 
+**Uygulama notu (2026-10-29)**: Üç sağlayıcı da OkHttp üstünden doğrudan REST ile çağrılıyor
+(`assistant/*Backend.kt`). Resmî SDK'ların Android 8.1 / 32-bit cihazda çalıştığı araçta
+doğrulanamıyordu; tek ve küçük bir HTTP katmanı üçünü aynı tutuyor. Claude: Messages API
+(`anthropic-version: 2026-10-21`). OpenAI: Responses API (`previous_response_id`). Gemini:
+Interactions API (`previous_interaction_id`; Google'ın güncel önerisi). Web araması yoksa
+(OpenAI/Gemini 400) asistan aramasız devam eder. Telefon araması, Bluetooth üretici servisi
+açıldığı için yapılabiliyor: yalnız sürücü açıkça istediğinde, ad belirsizse önce sorarak.
+
 **Claude ayrıntıları**: varsayılan model `claude-opus-5-5`, `thinking: {type: "adaptive"}`,
 `output_config.effort: "low"` (kısa sesli cevaplar için gecikmeyi düşük tutar). Web araması
 sunucu aracı `web_search_20260209`. Reddedilme durumu için `fallbacks: "default"` (beta

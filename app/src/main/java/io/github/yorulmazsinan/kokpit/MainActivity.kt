@@ -1,15 +1,23 @@
 package io.github.yorulmazsinan.kokpit
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,6 +30,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import io.github.yorulmazsinan.kokpit.assistant.AssistantNavigator
+import io.github.yorulmazsinan.kokpit.assistant.AssistantPanel
 import io.github.yorulmazsinan.kokpit.calls.CallBar
 import io.github.yorulmazsinan.kokpit.dock.AppPickerScreen
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
@@ -159,7 +169,35 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
             )
         }
     }
-    DockedLayout(dock, banner) { KokpitNavHost(nav, container, homeState, ::openSlot, ::longPressSlot) }
+    // The navigator outlives recompositions; always reach the latest dock state.
+    val openDockSlot by rememberUpdatedState<(DockSlot) -> Unit>(::openSlot)
+    DisposableEffect(nav) {
+        container.assistantNavigator = object : AssistantNavigator {
+            override fun openRoute(route: String) {
+                if (route == Routes.HOME) nav.popBackStack(Routes.HOME, inclusive = false) else nav.navigate(route) { launchSingleTop = true }
+            }
+
+            override fun openSlot(slot: DockSlot) = openDockSlot(slot)
+        }
+        onDispose { container.assistantNavigator = null }
+    }
+    val assistant by container.assistant.state.collectAsStateWithLifecycle()
+    val settings by container.settings.settings.collectAsStateWithLifecycle()
+    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { container.assistant.open() }
+    Box(Modifier.fillMaxSize()) {
+        DockedLayout(dock, banner) { KokpitNavHost(nav, container, homeState, ::openSlot, ::longPressSlot) }
+        AssistantPanel(
+            state = assistant,
+            providerLabel = settings.assistant.provider.label + " · " + settings.assistant.model,
+            onClose = container.assistant::close,
+            onTalk = container.assistant::open,
+            onOpenSettings = {
+                container.assistant.close()
+                nav.navigate(Routes.SETTINGS) { launchSingleTop = true }
+            },
+            onGrantMic = { micPermission.launch(Manifest.permission.RECORD_AUDIO) },
+        )
+    }
 }
 
 /**

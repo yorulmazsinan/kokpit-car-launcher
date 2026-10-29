@@ -8,6 +8,10 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.runtime.Composable
 import androidx.test.core.app.ApplicationProvider
 import io.github.yorulmazsinan.kokpit.KokpitApp
+import androidx.compose.foundation.layout.Box
+import io.github.yorulmazsinan.kokpit.assistant.AssistantPanel
+import io.github.yorulmazsinan.kokpit.assistant.AssistantState
+import io.github.yorulmazsinan.kokpit.assistant.SetupProblem
 import io.github.yorulmazsinan.kokpit.calls.ActiveCall
 import io.github.yorulmazsinan.kokpit.calls.CallBar
 import io.github.yorulmazsinan.kokpit.calls.CallEntry
@@ -125,6 +129,32 @@ class ScreensScreenshotTest {
             }
         }
         save("screen-call")
+    }
+
+    @Test
+    fun assistantListening() = assistant("screen-assistant-listening", AssistantState.Listening("Annemi ara"))
+
+    @Test
+    fun assistantAnswer() = assistant(
+        "screen-assistant-answer",
+        AssistantState.Answer("Yarın İstanbul'da hava nasıl?", "Yarın İstanbul'da parçalı bulutlu, en yüksek 21, en düşük 13 derece bekleniyor.", speaking = true),
+    )
+
+    @Test
+    fun assistantSetup() = assistant("screen-assistant-setup", AssistantState.NeedsSetup(SetupProblem.NO_KEY))
+
+    private fun assistant(name: String, state: AssistantState) {
+        compose.setContent {
+            KokpitTheme {
+                DesignScale {
+                    Box {
+                        DockedLayout({ Dock({}, {}, active = DockSlot.RADIO) }) { RadioScreen(984, listOf(984, 914, 953), {}, {}, {}, {}, connected = true) }
+                        AssistantPanel(state, "Claude · claude-opus-5-5", {}, {}, {}, {})
+                    }
+                }
+            }
+        }
+        save(name)
     }
 
     @Test

@@ -99,6 +99,8 @@ fun SettingsScreen(
                 }
             }
 
+            assistantSettings(container, settings.assistant) { change -> update { it.copy(assistant = change(it.assistant)) } }
+
             item { SectionHeader(stringResource(R.string.settings_dock)) }
             DockSlot.entries.filter { it != DockSlot.APPS }.forEach { slot ->
                 item(key = "dock_${slot.name}") {

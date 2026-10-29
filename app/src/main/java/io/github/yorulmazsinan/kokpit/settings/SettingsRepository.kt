@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.yorulmazsinan.kokpit.assistant.AiProvider
+import io.github.yorulmazsinan.kokpit.assistant.AssistantSettings
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
 import io.github.yorulmazsinan.kokpit.intro.IntroMode
 import io.github.yorulmazsinan.kokpit.intro.IntroSettings
@@ -30,6 +32,7 @@ data class KokpitSettings(
     val radioFrequency: Int = 984,
     val radioPresets: List<Int> = emptyList(),
     val useKokpitScreens: Boolean = true,
+    val assistant: AssistantSettings = AssistantSettings(),
 )
 
 class SettingsRepository(
@@ -64,6 +67,12 @@ class SettingsRepository(
             withSound = p[INTRO_SOUND] ?: false,
             lastPlayedIndex = p[INTRO_LAST_INDEX] ?: -1,
         ),
+        assistant = AssistantSettings(
+            provider = p[AI_PROVIDER]?.let { runCatching { AiProvider.valueOf(it) }.getOrNull() } ?: AiProvider.CLAUDE,
+            keys = AiProvider.entries.mapNotNull { provider -> p[aiKey(provider)]?.let(secrets::decrypt)?.let { provider to it } }.toMap(),
+            models = AiProvider.entries.mapNotNull { provider -> p[aiModel(provider)]?.let { provider to it } }.toMap(),
+            keepListening = p[AI_KEEP_LISTENING] ?: true,
+        ),
     )
 
     private fun write(p: MutablePreferences, s: KokpitSettings) {
@@ -86,6 +95,14 @@ class SettingsRepository(
         p[INTRO_EVERY_WAKE] = s.intro.everyWake
         p[INTRO_SOUND] = s.intro.withSound
         p[INTRO_LAST_INDEX] = s.intro.lastPlayedIndex
+        p[AI_PROVIDER] = s.assistant.provider.name
+        p[AI_KEEP_LISTENING] = s.assistant.keepListening
+        AiProvider.entries.forEach { provider ->
+            val key = s.assistant.keys[provider]?.trim()?.takeIf { it.isNotEmpty() }
+            // A key that cannot be sealed is dropped rather than written in the clear.
+            if (key == null) p.remove(aiKey(provider)) else runCatching { secrets.encrypt(key) }.onSuccess { p[aiKey(provider)] = it }.onFailure { p.remove(aiKey(provider)) }
+            p.setOrRemove(aiModel(provider), s.assistant.models[provider]?.trim()?.takeIf { it.isNotEmpty() })
+        }
     }
 
     private fun <T> MutablePreferences.setOrRemove(key: Preferences.Key<T>, value: T?) {
@@ -108,5 +125,9 @@ class SettingsRepository(
         val INTRO_EVERY_WAKE = booleanPreferencesKey("intro_every_wake_v2")
         val INTRO_SOUND = booleanPreferencesKey("intro_sound")
         val INTRO_LAST_INDEX = intPreferencesKey("intro_last_index")
+        val AI_PROVIDER = stringPreferencesKey("ai_provider")
+        val AI_KEEP_LISTENING = booleanPreferencesKey("ai_keep_listening")
+        fun aiKey(provider: AiProvider) = stringPreferencesKey("ai_key_sealed_${provider.name.lowercase()}")
+        fun aiModel(provider: AiProvider) = stringPreferencesKey("ai_model_${provider.name.lowercase()}")
     }
 }

@@ -3,7 +3,6 @@ package io.github.yorulmazsinan.kokpit.home
 import android.Manifest
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -13,7 +12,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import io.github.yorulmazsinan.kokpit.AppContainer
-import io.github.yorulmazsinan.kokpit.R
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.system.safeStart
 import java.time.LocalDateTime
@@ -80,11 +78,8 @@ fun HomeRoute(
             },
             onOpenMaps = { if (!launchSlot(DockSlot.MAPS)) onPickApp(DockSlot.MAPS) },
             onRefreshWeather = { container.scope.launch { container.weather.refresh() } },
-            onAssistant = {
-                if (!launchSlot(DockSlot.ASSISTANT)) {
-                    Toast.makeText(context, R.string.assistant_not_set, Toast.LENGTH_LONG).show()
-                }
-            },
+            // An app picked for the assistant slot wins; otherwise Kokpit's own assistant.
+            onAssistant = { if (!launchSlot(DockSlot.ASSISTANT)) container.assistant.open() },
             onPlayPause = container.nowPlaying::playPause,
             onNext = container.nowPlaying::next,
             onPrevious = container.nowPlaying::previous,

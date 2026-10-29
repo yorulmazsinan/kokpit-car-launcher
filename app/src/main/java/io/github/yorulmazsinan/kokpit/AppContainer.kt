@@ -7,6 +7,9 @@ import android.net.ConnectivityManager
 import android.net.Network
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.yorulmazsinan.kokpit.calendar.CalendarRepository
+import io.github.yorulmazsinan.kokpit.assistant.AssistantController
+import io.github.yorulmazsinan.kokpit.assistant.AssistantNavigator
+import io.github.yorulmazsinan.kokpit.assistant.DeviceActions
 import io.github.yorulmazsinan.kokpit.calls.CallLogRepository
 import io.github.yorulmazsinan.kokpit.calls.CallMonitor
 import io.github.yorulmazsinan.kokpit.player.UsbPlayer
@@ -60,6 +63,12 @@ class AppContainer(context: Context) {
     val vendorModes = VendorModes { headUnit.common }
     val callMonitor = CallMonitor(appContext, scope, headUnit, calls)
     val usbPlayer by lazy { UsbPlayer(appContext) }
+
+    /** Set by the app shell so the assistant can open Kokpit screens. */
+    var assistantNavigator: AssistantNavigator? = null
+    val assistant by lazy {
+        AssistantController(appContext, scope, { settings.settings.value.assistant }, DeviceActions(appContext, this) { assistantNavigator })
+    }
     val installedApps = InstalledApps(appContext.packageManager, appContext.packageName)
     val dock = DockRepository(appContext.dockStore, installedApps, scope)
     val settings = SettingsRepository(appContext.settingsStore, KeystoreSecretBox(), scope)
