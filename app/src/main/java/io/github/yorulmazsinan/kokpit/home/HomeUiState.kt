@@ -1,7 +1,6 @@
 package io.github.yorulmazsinan.kokpit.home
 
 import io.github.yorulmazsinan.kokpit.calendar.CalendarState
-import androidx.compose.ui.graphics.ImageBitmap
 import io.github.yorulmazsinan.kokpit.calls.CallEntry
 import io.github.yorulmazsinan.kokpit.dock.DockSlot
 import io.github.yorulmazsinan.kokpit.drive.TripSnapshot
@@ -21,8 +20,6 @@ data class HomeUiState(
     val dark: Boolean,
     val accent: ThemeAccent = ThemeAccent.GAUGE_GREEN,
     val recentCalls: List<CallEntry> = emptyList(),
-    /** Real app icons for slots whose own icon is a brand (CarPlay). */
-    val dockIcons: Map<DockSlot, ImageBitmap> = emptyMap(),
 )
 
 class HomeActions(

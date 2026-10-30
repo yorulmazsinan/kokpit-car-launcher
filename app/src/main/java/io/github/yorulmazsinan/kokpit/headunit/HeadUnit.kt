@@ -62,7 +62,7 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
             "services common=${c != null} radio=${radio != null} bt=${phone != null} car=${k != null}",
             "frequency=${c?.frequencyTenths()} rds=${radioCommon()?.stationName()} mode=${c?.workMode()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
             "speed=${c?.speed()} temp=${c?.temperature()} brake=${c?.brakeState()} reverse=${c?.reverseState()} night=${c?.nightMode()}",
-            "callLog uri=${VendorCallLog.uri} rows=${VendorCallLog.query(context).size}",
+            "callLog uri=${VendorCallLog.uri} rows=${VendorCallLog.query(context).size} error=${VendorCallLog.lastError} download=${VendorCallLog.lastDownload}",
             "can: km=${k?.totalKilometres()} fuel=${k?.fuelLeft()} speed=${k?.speed()} left=${k?.leftSignal()} right=${k?.rightSignal()} hazard=${k?.hazard()}",
         )
     }

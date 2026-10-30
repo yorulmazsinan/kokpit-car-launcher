@@ -41,7 +41,7 @@
     <string name="weather_showers">Showers</string>
     <string name="weather_thunder">Thunderstorm</string>
     <string name="dock_carplay">CarPlay</string>
-    <string name="dock_bluetooth">Bluetooth</string>
+    <string name="dock_bluetooth">Music</string>
     <string name="dock_phone">Phone</string>
     <string name="dock_radio">Radio</string>
     <string name="dock_maps">Maps</string>

@@ -1,7 +1,6 @@
 package io.github.yorulmazsinan.kokpit.home
 
 import android.content.Context
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -180,13 +179,5 @@ class HomeScreenTest {
     fun musicCardSeparatesInfoFromControls() {
         show(base.copy(media = NowPlayingState.Playing(io.github.yorulmazsinan.kokpit.media.NowPlaying("Şarkı", "Sanatçı", "Spotify", null, true))))
         compose.onNodeWithTag("music_divider").assertExists()
-    }
-
-    @Test
-    fun carPlayButtonUsesTheInstalledAppIcon() {
-        val icon = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888).asImageBitmap()
-        compose.setContent { KokpitTheme { HomeScreen(base.copy(dockIcons = mapOf(DockSlot.CARPLAY to icon)), now, HomeActions()) } }
-        compose.onNodeWithTag("dock_icon_app_CARPLAY", useUnmergedTree = true).assertExists()
-        compose.onNodeWithTag("dock_icon_app_RADIO", useUnmergedTree = true).assertDoesNotExist()
     }
 }

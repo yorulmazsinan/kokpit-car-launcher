@@ -15,7 +15,7 @@ MCU yazılımına dokunulmaz. Kaldırdığınızda cihaz eskisi gibi çalışır
 ### Ana Ekran
 Büyük saat ve tarih, hava durumu, son aramalar, takvimdeki sıradaki etkinlik, çalan
 müzik ve kontrolleri, GPS hız göstergesi ve yolculuk ortalaması, gidilen yön. Altta altı
-büyük düğme: CarPlay, Bluetooth, Telefon, Radyo, Harita, Uygulamalar. Koyu, açık ve gün
+büyük düğme: CarPlay, Müzik, Telefon, Radyo, Harita, Uygulamalar. Koyu, açık ve gün
 doğumu/batımına göre otomatik tema; üç renk seçeneği.
 
 | | |
@@ -30,7 +30,9 @@ ve telefon üreticinin uygulamasını açmadan Kokpit'in kendi ekranlarından y�
   arama ve altı kayıt. Kayda dokununca istasyona geçer, basılı tutunca çalan istasyonu
   adıyla kaydeder.
 - **Telefon** – son aramalar, rehber, favoriler ve tuş takımı; aramalar cihazın
-  Bluetooth'u üzerinden yapılır. Gelen aramada her ekranın üstünde arama kartı çıkar.
+  Bluetooth'u üzerinden yapılır. Arama geçmişini telefondan Kokpit kendisi ister; üretici
+  yalnızca rehberi indirir. Gelen aramada her ekranın üstünde arama kartı çıkar; MT8227L'de
+  bu işi üreticinin kendi arama penceresi yapar.
 - **Bluetooth Müzik** – telefondan çalan müziği gösterir ve yönetir.
 
 | | |

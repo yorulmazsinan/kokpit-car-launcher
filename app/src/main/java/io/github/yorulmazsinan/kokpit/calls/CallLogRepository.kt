@@ -40,6 +40,11 @@ class CallLogRepository(private val context: Context, private val scope: Corouti
         }
     }
 
+    /** Pulls the phone's call history onto the unit; the provider observer then refreshes [calls]. */
+    fun downloadFromPhone() {
+        scope.launch(Dispatchers.IO) { VendorCallLog.download(context) }
+    }
+
     private fun query(): List<CallEntry> = runCatching {
         val projection = arrayOf(CallLog.Calls.CACHED_NAME, CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE)
         context.contentResolver.query(CallLog.Calls.CONTENT_URI, projection, null, null, "${CallLog.Calls.DATE} DESC")?.use { c ->

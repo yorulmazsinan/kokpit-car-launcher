@@ -1,5 +1,7 @@
 package io.github.yorulmazsinan.kokpit.calls
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.net.Uri
 import java.time.LocalDateTime
@@ -13,10 +15,39 @@ import java.time.format.DateTimeFormatter
  */
 object VendorCallLog {
     private const val CLASS_NAME = "com.autochips.bluetooth.BluetoothCallLog"
+    private const val PB_MANAGER = "com.autochips.bluetooth.BluetoothPBManager"
+
+    /** PBAP record flags of MainUI's `downloadCallLog`, which MainUI never calls: it only pulls contacts. */
+    private const val CALL_HISTORY = 168
     private val TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
 
     val uri: Uri? by lazy {
         runCatching { Class.forName(CLASS_NAME).getField("CONTENT_URI").get(null) as? Uri }.getOrNull()
+    }
+
+    /** Why the last query came back empty, for Diagnostics. */
+    var lastError: String? = null
+        private set
+
+    /** Result of the last [download], for Diagnostics. */
+    var lastDownload: String? = null
+        private set
+
+    /** Asks the unit's PBAP client to pull the phone's call history into the provider. */
+    fun download(context: Context) {
+        lastDownload = runCatching {
+            val device = connectedDevice() ?: return@runCatching "no connected phone"
+            val pb = Class.forName(PB_MANAGER)
+            val manager = pb.getMethod("getInstance", Context::class.java).invoke(null, context.applicationContext)
+            val started = pb.getMethod("startDownload", BluetoothDevice::class.java, Int::class.javaPrimitiveType)
+                .invoke(manager, device, CALL_HISTORY)
+            "started=$started"
+        }.getOrElse { "failed: ${it.cause ?: it}" }
+    }
+
+    @Suppress("MissingPermission")
+    private fun connectedDevice(): BluetoothDevice? = BluetoothAdapter.getDefaultAdapter()?.bondedDevices?.firstOrNull { device ->
+        runCatching { device.javaClass.getMethod("isConnected").invoke(device) == true }.getOrDefault(false)
     }
 
     fun query(context: Context, limit: Int = 30): List<CallEntry> {
@@ -41,8 +72,11 @@ object VendorCallLog {
                         if (entry != null) add(entry)
                     } while (size < limit && c.moveToPrevious())
                 }
-            }.orEmpty()
-        }.getOrDefault(emptyList())
+            }.orEmpty().also { lastError = null }
+        }.getOrElse {
+            lastError = it.toString()
+            emptyList()
+        }
     }
 
     /** A provider row as a [CallEntry]; times look like `20261028T183005`. */

@@ -30,11 +30,18 @@ class BtMusic(private val phone: () -> HeadUnitPhone?, private val enterSource: 
         return unit.play()
     }
 
+    private var playingBeforeSwitch = false
+
+    fun rememberBeforeSwitch() {
+        playingBeforeSwitch = isPlaying() == true
+    }
+
     /**
-     * Switching the source to Bluetooth takes the audio focus for a moment, which pauses the phone;
-     * the vendor screen would restart it on resume. Start it again if it stayed off.
+     * Switching the source to Bluetooth takes the audio focus for a moment, which pauses the phone.
+     * Start it again only if it was playing: a bare "play" makes an idle iPhone shuffle the library.
      */
     suspend fun resumeAfterSwitch() {
+        if (!playingBeforeSwitch) return
         repeat(2) {
             delay(1_500)
             val unit = phone() ?: return

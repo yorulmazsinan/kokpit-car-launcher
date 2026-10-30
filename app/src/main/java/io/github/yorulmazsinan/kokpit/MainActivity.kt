@@ -155,12 +155,13 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
     }
 
     val dock: (@Composable () -> Unit)? = if (route in DOCKED_ROUTES) {
-        { Dock(::openSlot, ::longPressSlot, appIcons = homeState.dockIcons, active = active) }
+        { Dock(::openSlot, ::longPressSlot, active = active) }
     } else {
         null
     }
     val call by container.callMonitor.call.collectAsStateWithLifecycle()
-    val banner: (@Composable () -> Unit)? = call?.let { active ->
+    // The vendor's phone service pops its own call window over every app; ours would only double it.
+    val banner: (@Composable () -> Unit)? = call?.takeIf { container.headUnit.phone == null }?.let { active ->
         {
             CallBar(
                 active,
@@ -209,6 +210,7 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
 private fun SwitchVendorSource(
     container: AppContainer,
     source: VendorSource,
+    beforeSwitch: () -> Unit = {},
     afterSwitch: suspend () -> Unit = {},
     open: () -> Boolean?,
 ) {
@@ -217,6 +219,7 @@ private fun SwitchVendorSource(
     LaunchedEffect(source) {
         val modes = container.vendorModes
         if (withContext(Dispatchers.IO) { modes.isActive(source) }) return@LaunchedEffect
+        withContext(Dispatchers.IO) { beforeSwitch() }
         if (!withContext(Dispatchers.IO) { modes.enter(source) }) {
             if (withContext(Dispatchers.IO) { open() } != true) return@LaunchedEffect
             val left = withTimeoutOrNull(3_000) { lifecycle.currentStateFlow.first { !it.isAtLeast(Lifecycle.State.RESUMED) } }
@@ -308,7 +311,7 @@ private fun KokpitNavHost(
         }
         composable(Routes.MUSIC) {
             val vendor = container.headUnit.phone
-            SwitchVendorSource(container, VendorSource.BT_MUSIC, afterSwitch = container.btMusic::resumeAfterSwitch) { vendor?.openMusic() }
+            SwitchVendorSource(container, VendorSource.BT_MUSIC, container.btMusic::rememberBeforeSwitch, container.btMusic::resumeAfterSwitch) { vendor?.openMusic() }
             // The Bluetooth session's own state goes stale; re-read the head unit's while Music is open.
             LaunchedEffect(Unit) {
                 while (true) {

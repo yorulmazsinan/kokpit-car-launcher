@@ -31,6 +31,7 @@ class CallMonitor(
     private val _call = MutableStateFlow<ActiveCall?>(null)
     val call: StateFlow<ActiveCall?> = _call.asStateFlow()
     private var lastNumber: String? = null
+    private var phoneConnected: Boolean? = null
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -51,6 +52,7 @@ class CallMonitor(
             while (true) {
                 val state = withContext(Dispatchers.IO) { headUnit.phone?.callState() }
                 if (state != null) update(state)
+                watchConnection(withContext(Dispatchers.IO) { headUnit.common?.bluetoothConnected() })
                 delay(if (_call.value != null) 1_000 else 2_000)
             }
         }
@@ -68,6 +70,11 @@ class CallMonitor(
                 _call.value = null
                 lastNumber = null
                 calls.refresh()
+                // Give the phone a moment to write the call into its own history.
+                scope.launch {
+                    delay(5_000)
+                    calls.downloadFromPhone()
+                }
             }
             return
         }
@@ -75,6 +82,16 @@ class CallMonitor(
         val name = previous?.name?.takeIf { previous.number == number } ?: number?.let { nameFor(it) }
         val connectedAt = previous?.connectedAt ?: SystemClock.elapsedRealtime().takeIf { phase == CallPhase.ACTIVE }
         _call.value = ActiveCall(phase, number, name, connectedAt)
+    }
+
+    /** The unit only pulls contacts when a phone connects; fetch the call history too, once that is done. */
+    private fun watchConnection(connected: Boolean?) {
+        if (connected == null || connected == phoneConnected) return
+        phoneConnected = connected
+        if (connected) scope.launch {
+            delay(20_000)
+            calls.downloadFromPhone()
+        }
     }
 
     private suspend fun nameFor(number: String): String? = withContext(Dispatchers.IO) {

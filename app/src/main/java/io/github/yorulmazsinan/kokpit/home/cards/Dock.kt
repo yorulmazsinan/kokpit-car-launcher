@@ -2,9 +2,6 @@ package io.github.yorulmazsinan.kokpit.home.cards
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,10 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Apps
-import androidx.compose.material.icons.outlined.Bluetooth
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.Radio
 import androidx.compose.material3.Icon
@@ -44,19 +41,18 @@ fun Dock(
     onClick: (DockSlot) -> Unit,
     onLongClick: (DockSlot) -> Unit,
     modifier: Modifier = Modifier,
-    appIcons: Map<DockSlot, ImageBitmap> = emptyMap(),
     active: DockSlot? = null,
 ) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         DockSlot.entries.filter { it.inDock }.forEach { slot ->
-            DockButton(slot, appIcons[slot], slot == active, { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
+            DockButton(slot, slot == active, { onClick(slot) }, { onLongClick(slot) }, Modifier.weight(1f))
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, highlighted: Boolean, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
+private fun DockButton(slot: DockSlot, highlighted: Boolean, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier) {
     Surface(
         modifier
             .heightIn(min = 76.dp)
@@ -72,16 +68,12 @@ private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, highlighted: Boole
                 .padding(vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (appIcon != null) {
-                Image(appIcon, null, Modifier.size(32.dp).clip(RoundedCornerShape(7.dp)).testTag("dock_icon_app_${slot.name}"))
-            } else {
-                Icon(
-                    slot.icon(),
-                    null,
-                    tint = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(32.dp),
-                )
-            }
+            Icon(
+                slot.icon(),
+                null,
+                tint = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(32.dp),
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 stringResource(slot.label),
@@ -95,7 +87,7 @@ private fun DockButton(slot: DockSlot, appIcon: ImageBitmap?, highlighted: Boole
 
 fun DockSlot.icon(): ImageVector = when (this) {
     DockSlot.CARPLAY -> Icons.Outlined.DirectionsCar
-    DockSlot.BLUETOOTH -> Icons.Outlined.Bluetooth
+    DockSlot.BLUETOOTH -> Icons.Outlined.MusicNote
     DockSlot.PHONE -> Icons.Outlined.Phone
     DockSlot.RADIO -> Icons.Outlined.Radio
     DockSlot.MAPS -> Icons.Outlined.Map

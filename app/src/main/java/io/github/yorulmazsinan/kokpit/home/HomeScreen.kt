@@ -63,6 +63,6 @@ fun HomeScreen(state: HomeUiState, now: LocalDateTime, actions: HomeActions, sho
                 CompassCard(state.trip, Modifier.weight(0.6f).fillMaxWidth(), onClick = actions.onOpenMaps)
             }
         }
-        if (showDock) Dock(actions.onDock, actions.onDockLongPress, appIcons = state.dockIcons)
+        if (showDock) Dock(actions.onDock, actions.onDockLongPress)
     }
 }
