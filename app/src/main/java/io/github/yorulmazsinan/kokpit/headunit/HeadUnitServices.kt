@@ -63,6 +63,9 @@ class HeadUnitCommon(private val channel: VendorChannel) {
 class HeadUnitRadioDetails(private val channel: VendorChannel) {
     /** The station's RDS programme service name, e.g. "POWER FM"; null when nothing is received. */
     fun stationName(): String? = cleanPsName(channel.call(30) { it.readString() })
+
+    /** `Evc_evol_workmode_set`: the audio source switch the vendor screens make on resume. */
+    fun setWorkMode(mode: Int): Boolean = channel.send(29) { writeInt(mode) }
 }
 
 /** The tuner hands back a fixed 15-char buffer: NUL-padded, sometimes space-padded. */

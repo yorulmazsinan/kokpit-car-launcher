@@ -29,6 +29,7 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
     /** RDS name with the frequency it was read on, so a stale name never sticks to a new station. */
     val station: StateFlow<RdsStation?> = _station.asStateFlow()
     @Volatile private var radioDetails: HeadUnitRadioDetails? = null
+    private val rds = RdsTracker()
     private val _btDevice = MutableStateFlow<String?>(null)
     val btDevice: StateFlow<String?> = _btDevice.asStateFlow()
     private val _available = MutableStateFlow(false)
@@ -46,12 +47,12 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
         scope.launch(Dispatchers.IO) {
             val tuned = common?.frequencyTenths()
             tuned?.let { _frequency.value = it }
-            _station.value = tuned?.let { f -> details()?.stationName()?.let { RdsStation(f, it) } }
+            _station.value = tuned?.let { f -> rds.update(f, radioCommon()?.stationName())?.let { RdsStation(f, it) } }
             _btDevice.value = phone?.deviceName()?.takeIf { it.isNotBlank() }
         }
     }
 
-    private fun details(): HeadUnitRadioDetails? = radioDetails ?: common?.radioDetails()?.also { radioDetails = it }
+    fun radioCommon(): HeadUnitRadioDetails? = radioDetails ?: common?.radioDetails()?.also { radioDetails = it }
 
     /** Snapshot of everything the vendor services report, for Diagnostics. */
     fun probe(): List<String> {
@@ -59,8 +60,8 @@ class HeadUnit(private val context: Context, private val scope: CoroutineScope) 
         val k = car
         return listOf(
             "services common=${c != null} radio=${radio != null} bt=${phone != null} car=${k != null}",
-            "frequency=${c?.frequencyTenths()} rds=${details()?.stationName()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
-            "speed=${c?.speed()} temp=${c?.temperature()} brake=${c?.brakeState()} reverse=${c?.reverseState()} night=${c?.nightMode()} mode=${c?.workMode()}",
+            "frequency=${c?.frequencyTenths()} rds=${radioCommon()?.stationName()} mode=${c?.workMode()} btConnected=${c?.bluetoothConnected()} btDevice=${phone?.deviceName()}",
+            "speed=${c?.speed()} temp=${c?.temperature()} brake=${c?.brakeState()} reverse=${c?.reverseState()} night=${c?.nightMode()}",
             "callLog uri=${VendorCallLog.uri} rows=${VendorCallLog.query(context).size}",
             "can: km=${k?.totalKilometres()} fuel=${k?.fuelLeft()} speed=${k?.speed()} left=${k?.leftSignal()} right=${k?.rightSignal()} hazard=${k?.hazard()}",
         )

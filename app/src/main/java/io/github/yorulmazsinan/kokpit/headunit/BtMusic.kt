@@ -17,19 +17,22 @@ fun usesHeadUnitMusic(sessionPackage: String?): Boolean =
  * reporting PLAYING after the music stops, so play/pause asks the head unit what is really on.
  * These are blocking binder calls.
  */
-class BtMusic(private val phone: () -> HeadUnitPhone?) {
+class BtMusic(private val phone: () -> HeadUnitPhone?, private val enterSource: () -> Boolean = { true }) {
     fun isPlaying(): Boolean? = avrcpPlaying(phone()?.musicState())
 
     /** False when the head unit can't tell, so the caller falls back to the media session. */
     fun toggle(): Boolean {
         val unit = phone() ?: return false
         val playing = avrcpPlaying(unit.musicState()) ?: return false
-        return if (playing) unit.pause() else unit.play()
+        if (playing) return unit.pause()
+        // Starting music while another source is on makes the vendor jump to its own music screen.
+        enterSource()
+        return unit.play()
     }
 
     /**
-     * Opening the vendor music screen takes the audio focus for a moment, which pauses the phone;
-     * the vendor only restarts it while its screen stays up. Start it again if it stayed off.
+     * Switching the source to Bluetooth takes the audio focus for a moment, which pauses the phone;
+     * the vendor screen would restart it on resume. Start it again if it stayed off.
      */
     suspend fun resumeAfterSwitch() {
         repeat(2) {

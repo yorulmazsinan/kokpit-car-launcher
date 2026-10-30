@@ -202,8 +202,8 @@ private fun KokpitShell(container: AppContainer, homeState: HomeUiState) {
 }
 
 /**
- * Opens the vendor screen for [source] when needed (that is what switches the audio source)
- * and brings Kokpit straight back once it has taken over.
+ * Switches the audio source to [source] without leaving Kokpit. Only when the unit refuses
+ * does it fall back to opening the vendor screen and bringing Kokpit straight back.
  */
 @Composable
 private fun SwitchVendorSource(
@@ -216,12 +216,13 @@ private fun SwitchVendorSource(
     val lifecycle = (context as ComponentActivity).lifecycle
     LaunchedEffect(source) {
         val modes = container.vendorModes
-        if (!withContext(Dispatchers.IO) { modes.needsOpen(source) }) return@LaunchedEffect
-        if (withContext(Dispatchers.IO) { open() } != true) return@LaunchedEffect
-        val left = withTimeoutOrNull(3_000) { lifecycle.currentStateFlow.first { !it.isAtLeast(Lifecycle.State.RESUMED) } }
-        if (left != null) MainActivity.bringToFront(context)
-        delay(1_500)
-        withContext(Dispatchers.IO) { modes.learn(source) }
+        if (withContext(Dispatchers.IO) { modes.isActive(source) }) return@LaunchedEffect
+        if (!withContext(Dispatchers.IO) { modes.enter(source) }) {
+            if (withContext(Dispatchers.IO) { open() } != true) return@LaunchedEffect
+            val left = withTimeoutOrNull(3_000) { lifecycle.currentStateFlow.first { !it.isAtLeast(Lifecycle.State.RESUMED) } }
+            if (left != null) MainActivity.bringToFront(context)
+            delay(1_500)
+        }
         withContext(Dispatchers.IO) { afterSwitch() }
     }
 }

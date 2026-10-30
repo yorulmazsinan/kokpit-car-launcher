@@ -1,23 +1,24 @@
 package io.github.yorulmazsinan.kokpit.headunit
 
-/** Audio sources the vendor only switches to when its own screen opens. */
-enum class VendorSource { RADIO, BT_MUSIC }
+/** Audio sources with the work mode the vendor screen sets in its `onResume` (`Evc.evol_workmode_set`). */
+enum class VendorSource(val workMode: Int) { RADIO(1), BT_MUSIC(5) }
 
 /**
- * The vendor app changes the audio source in its screen's start-up, so Kokpit opens that
- * screen and comes straight back. The unit's work mode seen afterwards is remembered, so a
- * source that is already playing is not opened again (no flash of the vendor screen).
+ * Switches the head unit's audio source the way the vendor screen does, through
+ * `ITsRadioCommon.Evc_evol_workmode_set`, so the vendor screen never has to open.
+ * These are blocking binder calls.
  */
-class VendorModes(private val common: () -> HeadUnitCommon?) {
-    private val learned = mutableMapOf<VendorSource, Int>()
+class VendorModes(private val headUnit: HeadUnit) {
+    fun isActive(source: VendorSource): Boolean = headUnit.common?.workMode() == source.workMode
 
-    fun needsOpen(source: VendorSource): Boolean = needsVendorOpen(learned[source], common()?.workMode())
-
-    fun learn(source: VendorSource) {
-        common()?.workMode()?.let { learned[source] = it }
+    /** False when the unit can't be switched this way; the caller then opens the vendor screen. */
+    fun enter(source: VendorSource): Boolean {
+        if (isActive(source)) return true
+        if (headUnit.radioCommon()?.setWorkMode(source.workMode) != true) return false
+        repeat(10) {
+            if (isActive(source)) return true
+            Thread.sleep(100)
+        }
+        return isActive(source)
     }
 }
-
-/** Open unless the current work mode is known to be this source already. */
-fun needsVendorOpen(learnedMode: Int?, currentMode: Int?): Boolean =
-    learnedMode == null || currentMode == null || learnedMode != currentMode

@@ -24,6 +24,7 @@ import io.github.yorulmazsinan.kokpit.headunit.BtMusic
 import io.github.yorulmazsinan.kokpit.headunit.HeadUnit
 import io.github.yorulmazsinan.kokpit.headunit.usesHeadUnitMusic
 import io.github.yorulmazsinan.kokpit.headunit.VendorModes
+import io.github.yorulmazsinan.kokpit.headunit.VendorSource
 import io.github.yorulmazsinan.kokpit.drive.LocationSource
 import io.github.yorulmazsinan.kokpit.drive.TripTracker
 import io.github.yorulmazsinan.kokpit.home.ThemeMode
@@ -64,8 +65,8 @@ class AppContainer(context: Context) {
     val nowPlaying = NowPlayingRepository(appContext)
     val calls = CallLogRepository(appContext, scope)
     val headUnit = HeadUnit(appContext, scope)
-    val vendorModes = VendorModes { headUnit.common }
-    val btMusic = BtMusic { headUnit.phone }
+    val vendorModes = VendorModes(headUnit)
+    val btMusic = BtMusic({ headUnit.phone }) { vendorModes.enter(VendorSource.BT_MUSIC) }
     val callMonitor = CallMonitor(appContext, scope, headUnit, calls)
     val usbPlayer by lazy { UsbPlayer(appContext) }
 
